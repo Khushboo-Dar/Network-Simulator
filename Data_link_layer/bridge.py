@@ -1,31 +1,35 @@
+import logging
+
 class Bridge:
-    def __init__(self):
-        # MAC address table: { MAC address -> Port }
-        self.mac_table = {}
+    def __init__(self, name):
+        self.name = name
+        self.mac_table = {}  # MAC address table mapping MAC addresses to connected segments/devices
+        self.ports = []      # List of connected segments or devices
+        logging.basicConfig(level=logging.INFO)
 
-    def learn_mac_address(self, mac, port):
-        """Learns the MAC address and stores its corresponding port."""
-        if mac not in self.mac_table:
-            self.mac_table[mac] = port
-            print(f"[Bridge] Learned MAC: {mac} on Port: {port}")
+    def connect(self, segment):
+        """Connect a network segment or device to the bridge."""
+        self.ports.append(segment)
+        logging.info(f"Segment connected: {segment}")
 
-    def forward_frame(self, src_mac, dst_mac, src_port):
-        """
-        Forwards frames intelligently:
-        - If the destination MAC is known, send to the correct port.
-        - If unknown, broadcast to all except the source port.
-        """
-        self.learn_mac_address(src_mac, src_port)
+    def receive_frame(self, frame, sender):
+        """Process an incoming frame from a connected segment/device."""
+        if frame.is_corrupt():
+            logging.warning(f"Bridge: Corrupted frame received from {sender}")
+            return
 
-        if dst_mac in self.mac_table:
-            dst_port = self.mac_table[dst_mac]
-            print(f"[Bridge] Forwarding frame from {src_mac} to {dst_mac} via Port {dst_port}")
+        # Learn the source MAC address and record which port (segment) it came from.
+        self.mac_table[frame.src_mac] = sender
+        logging.info(f"Bridge MAC table updated: {frame.src_mac} -> {sender}")
+
+        if frame.dest_mac in self.mac_table:
+            # Forward the frame to the specific segment/device associated with the destination MAC.
+            receiver = self.mac_table[frame.dest_mac]
+            logging.info(f"Bridge forwarding frame to {frame.dest_mac} via {receiver}")
+            receiver.receive_frame(frame)
         else:
-            print("[Bridge] Destination unknown, broadcasting frame.")
-
-    def display_mac_table(self):
-        """Displays the MAC address table."""
-        print("\n[Bridge] MAC Address Table:")
-        for mac, port in self.mac_table.items():
-            print(f"  {mac} -> Port {port}")
-        print()
+            # Broadcast the frame to all segments/devices except the sender if destination is unknown.
+            logging.info(f"Bridge broadcasting frame: destination {frame.dest_mac} unknown")
+            for segment in self.ports:
+                if segment != sender:
+                    segment.receive_frame(frame)
