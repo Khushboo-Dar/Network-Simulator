@@ -1,9 +1,9 @@
 class Bridge:
     """Simulates a network bridge that connects two segments and filters traffic using MAC addresses."""
     
-    def __init__(self):
-        self.mac_table = {}  # Mapping of MAC addresses to ports
-        self.ports = {}  # Port to device mapping
+    def __init__(self): #Constructor
+        self.mac_table = {}  #empty dictionary to store Mapping of MAC addresses to ports {mac -> port}
+        self.ports = {}  #Port to device mapping {port->device}
 
     def connect_device(self, device, port):
         """Connects an end device to a specific port."""

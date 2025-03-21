@@ -10,20 +10,20 @@ class CRC:
 
     def crc_encode(self, data):
         """Encode data using CRC by appending the remainder."""
-        data_padded = data + "0" * (len(self.generator) - 1)  # Append zero bits
-        remainder = self.crc_division(data_padded)
+        data_augmented = data + "0" * (len(self.generator) - 1)  # Append zero bits
+        remainder = self.crc_division(data_augmented)
         return data + remainder  # Append remainder as CRC
 
     def crc_division(self, data):
         """Perform binary division (mod-2) for CRC calculation."""
         divisor = self.generator
-        temp = data[: len(divisor)]
+        temp = data[: len(divisor)] #If data = "1101001000" and divisor = "1011", then temp = "1101"
 
         for i in range(len(data) - len(divisor) + 1):
             if temp[0] == "1":
-                temp = self.xor(temp, divisor) + (data[len(divisor) + i] if len(divisor) + i < len(data) else "")
+                temp = self.xor(temp, divisor) + (data[len(divisor) + i] if len(divisor) + i < len(data) else "") #If the first bit of temp is "1", XOR is performed with the divisor.
             else:
-                temp = self.xor(temp, "0" * len(divisor)) + (data[len(divisor) + i] if len(divisor) + i < len(data) else "")
+                temp = self.xor(temp, "0" * len(divisor)) + (data[len(divisor) + i] if len(divisor) + i < len(data) else "") #If the first bit of temp is "1", XOR is performed with the divisor.
             temp = temp[1:]  # Remove processed bit
 
         return temp  # Remainder
@@ -37,7 +37,7 @@ class CRC:
         """Introduce a random error for testing."""
         if random.random() < 0.3:  # 30% chance of error
             index = random.randint(0, len(data) - 1)
-            corrupted_data = data[:index] + ("1" if data[index] == "0" else "0") + data[index + 1:]
+            corrupted_data = data[:index] + ("1" if data[index] == "0" else "0") + data[index + 1:] #If data = "1101001110" and index = 4, then:data[:4] = "1101", data[4] = "0" → Flipped to "1" , data[5:] = "001110"
             print(f"Error introduced at index {index}")
             return corrupted_data
         return data
