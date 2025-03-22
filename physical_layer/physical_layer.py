@@ -3,7 +3,7 @@ import random
 class EndDevice:
     """Simulates an End Device in the physical layer"""
 
-    def generate_mac_address():
+    def generate_mac_address(): #12-digit hexadecimal number
         mac_address = [f"{random.randint(0x00, 0xFF):02X}" for _ in range(5)]
         return "00:" + ":".join(mac_address)
 
@@ -12,7 +12,9 @@ class EndDevice:
         self.mac = EndDevice.generate_mac_address()
         self.port = port  # used to simulate connection status; 0 means free
         self.data = data
-        self.seq_no = seq_no
+        self.seq_no = seq_no #a unique identifier assigned to each element
+        # to track the order of data packets or messages, especially in scenarios
+        # where data might be transmitted out of order or lost.
         self.message = ""
         self.device_id = seq_no
 
@@ -35,9 +37,9 @@ e10 = EndDevice(" 192.168.56.10", 0, "No data", 10)
 # index 0 is dummy - for 1-based access(means no end device  for 0)
 endDevices = [-1, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10]
 
-# Function to check if any end device has vacant port (i.e. port == 0) if 1 mwans The device is already connected to another device 
+# Function to check if any end device has vacant port (i.e. port == 0) if 1 mwans The device is already connected to another device
 def end_device_vacant():
-    for device in endDevices[1:]:  
+    for device in endDevices[1:]:
         if device.port == 0:
             return True
     return False
@@ -81,8 +83,8 @@ class Connection:
             print(f"         ---TRANSMISSION SUCCESSFULL---ACK RECEIVED FROM END DEVICE {self.receiver.device_id} ---")
         else:
             print("---ACK LOST---")
-      
-                    
+
+
 def simulate_dedicated_link():
         sender_id = int(input("Enter Sender Device no:(1-10) "))
         receiver_id = int(input("Enter Receiver Device no:(1-10) "))
@@ -99,12 +101,20 @@ def simulate_dedicated_link():
         conn.transmit_message(message)
 def simulate_star_topology():
     Hub1 = Hub()
-    
-    print("Enter Sender Device no:")
-    sender_id = int(input())
-    print("Enter Receiver Device no:")
-    receiver_id = int(input())
 
+    print("Enter Sender Device no(1-5):")
+    sender_id = int(input())
+    print("Enter Receiver Device no(1-5):")
+    receiver_id = int(input())
+    
+    if sender_id < 1 or sender_id > 5 or receiver_id < 1 or receiver_id > 5:
+        print("Invalid device number. Please enter a number between 1 and 5.")
+        return
+
+    if sender_id == receiver_id:
+        print("Sender and Receiver cannot be the same device.")
+        return
+    
     print(f"You have selected these two End Devices within same HUB: {sender_id} and {receiver_id}")
 
     sender = endDevices[sender_id]
@@ -112,7 +122,8 @@ def simulate_star_topology():
 #The sender device's port is vacant.The hub has at least one free port.
     if sender.port == 0 and Hub1.hub_vacant():
         print("Connection made between Sender-End Device and HUB")
-        sender.port = 1 #port1 is for input (connection from sender device to hub)
+        sender.port = 1
+        #port1 is for input .Connect Sender to Hub always on port1
         Hub1.port1 = 9
 # check whether the hub still has other ports available to connect to other devices .BROADCAST
 #port2, port3, etc., are for outputs (from hub to other devices)
@@ -145,7 +156,7 @@ def simulate_star_topology():
         else:
             print("No port vacant in HUB")
     else:
-        print("---No port available in HUB or Sender already connected---")           
+        print("---No port available in HUB or Sender already connected---")
 def main():
          print("\n========== NETWORK SIMULATOR MENU ==========")
          print("1. Dedicated Link (End-to-End Connection)")
@@ -165,4 +176,4 @@ def main():
          else:
              print(" Invalid choice. Please enter 1 or 2.")
 
-main()    
+main()
