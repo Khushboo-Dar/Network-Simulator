@@ -1,1 +1,0 @@
-#defines end devices and hub class
