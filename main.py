@@ -1,6 +1,6 @@
 from data_link_layer.bridge import bridge_simulation
 from data_link_layer.error_control import crc_simulation
-from data_link_layer.stop_n_wait import simulate_stop_and_wait
+from data_link_layer.stop_n_wait import simulate_stop_and_wait_arq
 from physical_layer.physical_layer import simulate_dedicated_link, simulate_star_topology
 
 def main():
@@ -34,7 +34,7 @@ def main():
 
         elif choice == "5":
           print("\n[ Stop and Wait Simulation Selected ]")
-          simulate_stop_and_wait()
+          simulate_stop_and_wait_arq
 
         elif choice == "6":
             print("\nExiting Network Simulator. Goodbye!")

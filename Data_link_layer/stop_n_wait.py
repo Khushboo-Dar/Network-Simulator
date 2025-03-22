@@ -1,7 +1,7 @@
 import random
 import time
 
-class StopAndWait:
+class StopAndWaitARQ:
     def __init__(self, loss_prob=0.2):  # 20% chance of packet loss
         self.loss_prob = loss_prob
 
@@ -18,16 +18,16 @@ class StopAndWait:
             return True  # ACK received
 
     def send_data(self, frames):
-        """Implements Stop-and-Wait flow control for multiple frames."""
+        """Implements Stop-and-Wait ARQ for multiple frames."""
         for frame in frames:
             while not self.send_frame(frame):  # Keep sending until ACK is received
                 time.sleep(1)  # Wait before retrying
             print(f"ACK received for Frame: {frame} \n")
 
 
-def simulate_stop_and_wait():
-    """Function to run Stop-and-Wait simulation."""
-    sender = StopAndWait()
+def simulate_stop_and_wait_arq():
+    """Function to run Stop-and-Wait ARQ simulation."""
+    sender = StopAndWaitARQ()
     
     # Get number of frames from user
     num_frames = int(input("Enter the number of frames to send: "))
@@ -40,4 +40,4 @@ def simulate_stop_and_wait():
 
 # Example usage:
 if __name__ == "__main__":
-    simulate_stop_and_wait()
+    simulate_stop_and_wait_arq()
