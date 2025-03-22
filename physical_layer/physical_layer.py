@@ -157,7 +157,7 @@ def simulate_star_topology():
             print("No port vacant in HUB")
     else:
         print("---No port available in HUB or Sender already connected---")
-def main():
+"""def main():
          print("\n========== NETWORK SIMULATOR MENU ==========")
          print("1. Dedicated Link (End-to-End Connection)")
          print("2. Simulation through Hub — STAR TOPOLOGY")
@@ -176,4 +176,4 @@ def main():
          else:
              print(" Invalid choice. Please enter 1 or 2.")
 
-main()
+main()"""
