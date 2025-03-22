@@ -10,7 +10,7 @@ class StopAndWait:
         print(f"Sending Frame: {frame}")
         time.sleep(1)  # Simulate transmission delay
         
-        if random.random() < self.loss_prob:  # Simulate packet loss
+        if random.random() < self.loss_prob:  # Simulate packet loss --> If the random number is less than self.loss_prob, the frame is considered lost.
             print(f"Frame {frame} lost! Retrying...\n")
             return False  # No ACK received (lost frame)
         else:
@@ -20,7 +20,7 @@ class StopAndWait:
     def send_data(self, frames):
         """Implements Stop-and-Wait flow control for multiple frames."""
         for frame in frames:
-            while not self.send_frame(frame):  # Keep sending until ACK is received
+            while not self.send_frame(frame):  # Keep sending until ACK is received, if false breaks out
                 time.sleep(1)  # Wait before retrying
             print(f"ACK received for Frame: {frame} \n")
 
@@ -33,11 +33,6 @@ def simulate_stop_and_wait():
     num_frames = int(input("Enter the number of frames to send: "))
     data_frames = [f"Frame {i+1}" for i in range(num_frames)]
 
-    print("\n--- Start Transmission ---\n")
-    sender.send_data(data_frames)
-    print("--- Transmission Completed ---")
-
-
-# Example usage:
-if __name__ == "__main__":
-    simulate_stop_and_wait()
+print("\n--- Start Transmission ---\n")
+sender.send_data(data_frames)
+print("--- Transmission Completed ---")
