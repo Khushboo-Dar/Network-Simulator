@@ -64,7 +64,7 @@ class Bridge:
             print(f"MAC: {mac} -> Port: {port}")
 
 
-def run_simulation():
+def bridge_simulation():
     """Runs the network bridge simulation."""
     bridge = Bridge()
 
@@ -89,4 +89,4 @@ def run_simulation():
 
 #Will not run automatically
 if __name__ == "__main__":
-    run_simulation()
+    bridge_simulation()
