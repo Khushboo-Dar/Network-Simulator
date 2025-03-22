@@ -60,11 +60,6 @@ To test the **Data Link Layer** implementation:
 python tests/test_data_link.py
 ```
 
-To test the **Physical Layer** implementation:
-
-```bash
-python tests/test_simulation.py
-```
 
 ## Running the Simulation
 
