@@ -1,34 +1,31 @@
-import logging
-
 class Switch:
-    def __init__(self, name):
-        self.name = name
-        self.mac_table = {}  # MAC address table
-        self.ports = []
-        logging.basicConfig(level=logging.INFO)
+    def __init__(self):
+        """Initialize a switch with an empty MAC address table."""
+        self.mac_table = {}
 
-    def connect(self, device):
-        """Connect a device to the switch"""
-        self.ports.append(device)
-        logging.info(f"Device connected: {device}")
+    def learn_mac(self, mac, port):
+        """Learn and store MAC addresses in the switch's table."""
+        self.mac_table[mac] = port
+        print(f"\n[SWITCH] Learned MAC {mac} on port {port}\n")
 
-    def receive_frame(self, frame, sender):
-        """Process an incoming frame"""
-        if frame.is_corrupt():
-            logging.warning(f"Corrupted frame received from {sender}")
-            return
+    def forward_frame(self, frame, incoming_port):
+        """Forward frames based on MAC address learning."""
+        dest_mac = frame.dest_mac
 
-        self.mac_table[frame.src_mac] = sender  # Learn source MAC
-        logging.info(f"MAC table updated: {frame.src_mac} -> {sender}")
-
-        if frame.dest_mac in self.mac_table:
-            # Forward to specific device
-            receiver = self.mac_table[frame.dest_mac]
-            logging.info(f"Switch forwarding frame to {frame.dest_mac}")
-            receiver.receive_frame(frame)
+        if dest_mac in self.mac_table:
+            port = self.mac_table[dest_mac]
+            print(f"\n[SWITCH] Forwarding frame to port {port} (Dest: {dest_mac})\n")
         else:
-            # Broadcast to all except sender
-            logging.info(f"Switch broadcasting frame as {frame.dest_mac} is unknown")
-            for device in self.ports:
-                if device != sender:
-                    device.receive_frame(frame)
+            print("\n[SWITCH] Destination unknown, broadcasting...\n")
+            for port in range(1, 6):  # Assume switch has 5 ports
+                if port != incoming_port:
+                    print(f"  --> Broadcast on Port {port}")
+
+    def display_mac_table(self):
+        """Print the current MAC address table."""
+        print("\n===========================")
+        print("      SWITCH MAC TABLE    ")
+        print("===========================")
+        for mac, port in self.mac_table.items():
+            print(f"MAC: {mac}  ->  Port: {port}")
+        print("===========================\n")

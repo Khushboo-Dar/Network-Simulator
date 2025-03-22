@@ -1,82 +1,125 @@
 import sys
 import os
-import logging
+
+# Ensure the parent directory is in the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from data_link_layer.switch import Switch
+# Correct imports based on folder structure
 from data_link_layer.frame import Frame
+from data_link_layer.switch import Switch
 from data_link_layer.access_control import CSMA_CD
 from data_link_layer.end_device import EndDevice
 
-logging.basicConfig(level=logging.INFO)
+
+class EndDevice:
+    """Represents an end device that can send and receive frames."""
+    def __init__(self, name, mac_address):
+        self.name = name
+        self.mac_address = mac_address
+
+    def receive_frame(self, frame):
+        """Receives and prints frame details."""
+        print(f"\n[DEVICE: {self.name}] Received Frame: {frame.payload}\n")
+
+    def send_frame(self, frame, switch):
+        """Sends a frame through the switch."""
+        print(f"\n[DEVICE: {self.name}] Sending Frame: {frame.payload} --> {frame.dest_mac}\n")
+        switch.forward_frame(frame, self.mac_address)
+
+# =========================================================
+# TEST CASE 1: SWITCH WITH 5 DEVICES & ACCESS CONTROL
+# =========================================================
+print("\n===== TEST CASE 1: SWITCH WITH 5 DEVICES =====")
+
+# Create a switch
+switch = Switch()
+
+# Create 5 end devices and connect to switch
+devices = [
+    EndDevice("PC1", "AA:BB:CC:DD:EE:01"),
+    EndDevice("PC2", "AA:BB:CC:DD:EE:02"),
+    EndDevice("PC3", "AA:BB:CC:DD:EE:03"),
+    EndDevice("PC4", "AA:BB:CC:DD:EE:04"),
+    EndDevice("PC5", "AA:BB:CC:DD:EE:05"),
+]
+
+# Learn MAC addresses in switch
+for i, device in enumerate(devices, start=1):
+    switch.learn_mac(device.mac_address, i)
+
+# Display MAC table
+switch.display_mac_table()
+
+# Send data between devices
+frame1 = Frame(devices[0].mac_address, devices[3].mac_address, "Hello PC4!")
+devices[0].send_frame(frame1, switch)
+
+# Report Broadcast & Collision Domains
+print("\n===== NETWORK ANALYSIS =====")
+print("Number of Broadcast Domains: 1 (Single Switch Network)")
+print("Number of Collision Domains: 5 (Each device has its own connection)")
+
+# =========================================================
+# TEST CASE 2: TWO STAR TOPOLOGIES WITH HUBS + SWITCH
+# =========================================================
+print("\n===== TEST CASE 2: TWO STAR TOPOLOGIES WITH HUBS =====")
 
 class Hub:
+    """Simulates a Hub that forwards frames to all connected devices."""
     def __init__(self, name):
         self.name = name
-        self.ports = []
+        self.devices = []
 
     def connect(self, device):
-        self.ports.append(device)
+        """Connects an end device to the hub."""
+        self.devices.append(device)
 
     def receive_frame(self, frame, sender):
-        for device in self.ports:
+        """Broadcasts frame to all connected devices."""
+        print(f"\n[{self.name}] Broadcasting Frame: {frame.payload}")
+        for device in self.devices:
             if device != sender:
-                device.receive_frame(frame, sender)  # Pass the sender argument
+                device.receive_frame(frame)
 
-def task1():
-    # Task 1: Create a switch with five end devices
-    print("Executing Task 1...")
-    devices = [EndDevice(f"PC{i+1}", f"AA:BB:CC:DD:EE:0{i+1}") for i in range(5)]
-    switch = Switch("Switch1")
+# Create two hubs
+hub1 = Hub("Hub1")
+hub2 = Hub("Hub2")
 
-    # Connect devices
-    for device in devices:
-        switch.connect(device)
+# Create 5 devices for each hub
+hub1_devices = [EndDevice(f"Hub1_PC{i+1}", f"AA:BB:CC:DD:EE:1{i}") for i in range(5)]
+hub2_devices = [EndDevice(f"Hub2_PC{i+1}", f"AA:BB:CC:DD:EE:2{i}") for i in range(5)]
 
-    # Create and send frames
-    csma_cd = CSMA_CD()
-    for i in range(len(devices)):
-        for j in range(len(devices)):
-            if i != j:
-                frame = Frame(devices[i].mac, devices[j].mac, f"Hello from PC{i+1} to PC{j+1}")
-                csma_cd.send_frame(frame, devices[i], switch)
+# Connect devices to respective hubs
+for device in hub1_devices:
+    hub1.connect(device)
 
-    # Report the number of broadcast and collision domains
-    print("Total number of broadcast domains: 1")
-    print("Total number of collision domains: 5")
+for device in hub2_devices:
+    hub2.connect(device)
 
-def task2():
-    # Task 2: Create two star topologies with hubs and connect them using a switch
-    print("Executing Task 2...")
-    devices1 = [EndDevice(f"PC{i+1}", f"AA:BB:CC:DD:EE:0{i+1}") for i in range(5)]
-    devices2 = [EndDevice(f"PC{i+6}", f"AA:BB:CC:DD:EE:0{i+6}") for i in range(5)]
+# Create a switch to connect the two hubs
+switch2 = Switch()
 
-    # Create hubs
-    hub1 = Hub("Hub1")
-    hub2 = Hub("Hub2")
+# Connect hubs to the switch (assuming they act like a device)
+switch2.learn_mac("HUB1", 1)
+switch2.learn_mac("HUB2", 2)
 
-    # Connect devices to hubs
-    for device in devices1:
-        hub1.connect(device)
-    for device in devices2:
-        hub2.connect(device)
+# Send data from a PC in Hub1 to a PC in Hub2
+frame2 = Frame(hub1_devices[0].mac_address, hub2_devices[3].mac_address, "Hello Hub2_PC4!")
+hub1.receive_frame(frame2, hub1_devices[0])
+switch2.forward_frame(frame2, "HUB1")
 
-    # Create switch and connect hubs to switch
-    switch = Switch("Switch1")
-    switch.connect(hub1)
-    switch.connect(hub2)
+# Report Broadcast & Collision Domains
+print("\n===== NETWORK ANALYSIS =====")
+print("Number of Broadcast Domains: 2 (One per hub)")
+print("Number of Collision Domains: 5 per hub (Since hubs cause collisions)")
+print("Total Collision Domains: 10 (5 per hub)")
 
-    # Create and send frames
-    csma_cd = CSMA_CD()
-    for i in range(len(devices1)):
-        for j in range(len(devices2)):
-            frame = Frame(devices1[i].mac, devices2[j].mac, f"Hello from PC{i+1} to PC{j+6}")
-            csma_cd.send_frame(frame, devices1[i], switch)
+# =========================================================
+# TEST CASE 3: TESTING CSMA/CD
+# =========================================================
+print("\n===== TEST CASE 3: TESTING CSMA/CD =====")
 
-    # Report the number of broadcast and collision domains
-    print("Total number of broadcast domains: 1")
-    print("Total number of collision domains: 10")
+csma_cd = CSMA_CD()
 
-if __name__ == "__main__":
-    task1()
-    task2()
+# Test CSMA/CD with a sample frame transmission
+csma_cd.send_frame(frame1)
