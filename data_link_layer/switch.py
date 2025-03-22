@@ -1,31 +1,32 @@
+from data_link_layer.frame import Frame
+
 class Switch:
     def __init__(self):
-        """Initialize a switch with an empty MAC address table."""
-        self.mac_table = {}
+        """ Initialize switch with an empty MAC address table. """
+        self.mac_table = {}  # Dictionary to store MAC-to-port mappings
 
-    def learn_mac(self, mac, port):
-        """Learn and store MAC addresses in the switch's table."""
-        self.mac_table[mac] = port
-        print(f"\n[SWITCH] Learned MAC {mac} on port {port}\n")
+    def learn_mac(self, mac_address, port):
+        """ Store the MAC address in the switch table. """
+        self.mac_table[mac_address] = port
+        print("\n========================================")
+        print(f"[SWITCH] Learned MAC {mac_address} on port {port}")
+        print("========================================\n")
 
-    def forward_frame(self, frame, incoming_port):
-        """Forward frames based on MAC address learning."""
-        dest_mac = frame.dest_mac
+    def forward_frame(self, sender, receiver, data):
+        """ Forward frame based on the MAC address table. """
+        
+        print("\n========================================")
+        print(f"[SWITCH] Received Frame from {sender} to {receiver}")
+        print("========================================\n")
 
-        if dest_mac in self.mac_table:
-            port = self.mac_table[dest_mac]
-            print(f"\n[SWITCH] Forwarding frame to port {port} (Dest: {dest_mac})\n")
+        # Create a Frame object
+        frame = Frame(sender, receiver, data)
+
+        if frame.dest_mac in self.mac_table:
+            port = self.mac_table[frame.dest_mac]
+            print(f"\n[SWITCH] Forwarding frame to {frame.dest_mac} on port {port}\n")
         else:
             print("\n[SWITCH] Destination unknown, broadcasting...\n")
-            for port in range(1, 6):  # Assume switch has 5 ports
-                if port != incoming_port:
-                    print(f"  --> Broadcast on Port {port}")
-
-    def display_mac_table(self):
-        """Print the current MAC address table."""
-        print("\n===========================")
-        print("      SWITCH MAC TABLE    ")
-        print("===========================")
-        for mac, port in self.mac_table.items():
-            print(f"MAC: {mac}  ->  Port: {port}")
-        print("===========================\n")
+            for port in self.mac_table.values():
+                print(f"  --> Broadcast on Port {port}")
+            print("\n========================================\n")
