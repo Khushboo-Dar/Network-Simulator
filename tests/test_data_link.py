@@ -4,27 +4,27 @@ import os
 # Ensure the parent directory is in the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Correct imports based on folder structure
+#imports based on files in the data_link_layer folder
 from data_link_layer.frame import Frame
 from data_link_layer.switch import Switch
 from data_link_layer.access_control import CSMA_CD
 from data_link_layer.end_device import EndDevice
 
 
-class EndDevice:
-    """Represents an end device that can send and receive frames."""
-    def __init__(self, name, mac_address):
-        self.name = name
-        self.mac_address = mac_address
+# class EndDevice:
+#     """Represents an end device that can send and receive frames."""
+#     def __init__(self, name, mac_address):
+#         self.name = name
+#         self.mac_address = mac_address
 
-    def receive_frame(self, frame):
-        """Receives and prints frame details."""
-        print(f"\n[DEVICE: {self.name}] Received Frame: {frame.payload}\n")
+#     def receive_frame(self, frame):
+#         """Receives and prints frame details."""
+#         print(f"\n[DEVICE: {self.name}] Received Frame: {frame.payload}\n")
 
-    def send_frame(self, frame, switch):
-        """Sends a frame through the switch."""
-        print(f"\n[DEVICE: {self.name}] Sending Frame: {frame.payload} --> {frame.dest_mac}\n")
-        switch.forward_frame(frame, self.mac_address)
+#     def send_frame(self, frame, switch):
+#         """Sends a frame through the switch."""
+#         print(f"\n[DEVICE: {self.name}] Sending Frame: {frame.payload} --> {frame.dest_mac}\n")
+#         switch.forward_frame(frame, self.mac_address)
 
 
 def test_case_1():
@@ -110,7 +110,7 @@ def test_case_2():
     # Send data from a PC in Hub1 to a PC in Hub2
     frame2 = Frame(hub1_devices[0].mac_address, hub2_devices[3].mac_address, "Hello Hub2_PC4!")
     hub1.receive_frame(frame2, hub1_devices[0])
-    switch2.forward_frame(frame2, "HUB1")
+    switch2.forward_frame(frame2, "HUB1", frame2.payload)
 
     # Report Broadcast & Collision Domains
     print("\n===== NETWORK ANALYSIS =====")
