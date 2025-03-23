@@ -13,15 +13,20 @@ class CSMA_CD:
         print("===========================")
 
         print(f"Sending Frame: {frame}")
-        time.sleep(1)
+        time.sleep(1)  # Wait for 1 second
 
         if random.random() < self.collision_probability:
-            print("\n[CSMA/CD] Collision detected! Retrying...\n")
+            print("\n[CSMA/CD] Collision detected! Sending jam signal...\n")
+            self.send_jam_signal()
             backoff_time = random.randint(1, 3)
             print(f"[CSMA/CD] Waiting for {backoff_time} seconds before retrying...")
             time.sleep(backoff_time)
-            self.send_frame(frame)  # Retry after backoff
+            self.send_frame(frame)  # Retry after backoff (recursive call)
         else:
             print("\n[CSMA/CD] Frame sent successfully!\n")
 
         print("===========================\n")
+
+    def send_jam_signal(self):
+        """Simulate sending a jam signal to indicate a collision."""
+        print("[CSMA/CD] Jam signal sent to notify all devices of the collision.")

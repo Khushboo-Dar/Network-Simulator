@@ -7,7 +7,7 @@ class Frame:
 
     def __str__(self):
         """String representation of the frame for debugging."""
-        return f"Frame(SRC: {self.src_mac}, DEST: {self.dest_mac}, DATA: {self.payload})"
+        return f"Frame(SRC: {self.src_mac}, DEST: {self.dest_mac}, Payload: {self.payload})"
 
     def display(self):
         """Print the frame details."""
