@@ -79,13 +79,29 @@ class StopAndWaitARQ:
         self.send_ack(frame.seq_num)
 
     def send_ack(self, seq_num):
-        """Sends an acknowledgment."""
-        print(f"Sender: Received ACK for Frame {seq_num}\n")
+        """Sends an acknowledgment for the next frame to be sent."""
+        next_seq_num = seq_num ^ 1  # Toggle to the next sequence number
+        print(f"Sender: Sending ACK for Frame {next_seq_num}\n")
+        
         self.ack_received.set()  # ACK received, stop timer
         if self.timer:
             self.timer.cancel()
-        self.sender_seq ^= 1  # Toggle sequence number
-        self.receiver_seq ^= 1  # Toggle sequence number
+        
+        # Toggle sequence numbers for sender and receiver
+        self.sender_seq ^= 1  # Toggle sender's sequence number
+        self.receiver_seq ^= 1  # Toggle receiver's sequence number
+
+        """The sequence numbers (self.sender_seq and self.receiver_seq) are toggled using the XOR (^) operation with 1.
+
+This is a common technique in protocols like the stop-and-wait protocol, where sequence numbers alternate between 0 and 1 to distinguish between consecutive frames.
+
+For example:
+
+If self.sender_seq is 0, it becomes 1 after the operation.
+
+If self.sender_seq is 1, it becomes 0 after the operation.
+
+The same logic applies to self.receiver_seq."""
 
     def send_data(self, frames):
         """Sends multiple frames using Stop-and-Wait ARQ."""
