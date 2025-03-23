@@ -2,7 +2,8 @@ from Data_link_layer.bridge import bridge_simulation
 from Data_link_layer.error_control import crc_simulation
 from Data_link_layer.stop_n_wait import simulate_stop_and_wait
 from physical_layer.physical_layer import simulate_dedicated_link, simulate_star_topology
-from tests.test_data_link import test_case_1, test_case_2, test_case_3  # Import test cases of Data Link Layer
+from tests.test_data_link import test_case_1, test_case_2, test_case_3  # Import test cases
+
 
 def main():
     while True:
@@ -37,9 +38,9 @@ def main():
             bridge_simulation()
 
         elif choice == "5":
-            print("\n[ Stop and Wait Simulation Selected ]")
-            simulate_stop_and_wait()
-
+          print("\n[ Stop and Wait Simulation Selected ]")
+          simulate_stop_and_wait()
+          
         elif choice == "6":
             print("\n[ Test Case 1: Switch with 5 Devices Selected ]")
             test_case_1()
