@@ -61,8 +61,9 @@ class StopAndWaitARQ:
 
     def send_frame(self, data):
         """Sends a frame with CRC checksum."""
-        encoded_data = self.crc.crc_encode(data)  # Append CRC checksum
-        frame = Frame(self.sender_seq, encoded_data)
+        encoded_data = self.crc.crc_encode(data)
+        corrupted_data = self.crc.introduce_error(encoded_data)  # Append CRC checksum
+        frame = Frame(self.sender_seq, corrupted_data)
         print(f"\nSender: Sending frame + checksum: {frame}")
 
         # Simulate frame loss (10% probability)
