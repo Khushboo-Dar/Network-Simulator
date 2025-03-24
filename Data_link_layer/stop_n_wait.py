@@ -102,13 +102,14 @@ class StopAndWaitARQ:
         self.ack_received.set()  # ACK received, stop timer
         if self.timer:
             self.timer.cancel()
-        
+
         # Toggle sequence numbers
         self.sender_seq ^= 1  
         self.receiver_seq ^= 1 
         """The sequence number alternates (0 → 1 → 0 → 1), ensuring proper synchronization.
 
         This mimics the window moving forward by one frame after each successful transmission."""
+
 
         """The sequence numbers (self.sender_seq and self.receiver_seq) are toggled using the XOR (^) operation with 1.
 
@@ -120,7 +121,9 @@ class StopAndWaitARQ:
         
         If self.sender_seq is 1, it becomes 0 after the operation.
         
+
         The same logic applies to self.receiver_seq.""" 
+
 
     def send_data(self, frames):
         """Sends multiple frames using Stop-and-Wait ARQ."""
