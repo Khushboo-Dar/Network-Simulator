@@ -1,27 +1,38 @@
+import os
+import sys
+
+# Get the absolute path of the project root directory
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Add the project root to sys.path
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import random
 import time
 import threading
-
+from Data_link_layer.error_control import CRC  # Import CRC class
 
 class Frame:
     """Represents a data frame with sequence number and data."""
     
     def __init__(self, seq_num, data):
         self.seq_num = seq_num
-        self.data = data  # No checksum since error control is removed
+        self.data = data  # Data with CRC checksum
 
     def __repr__(self):
         return f"Frame(seq={self.seq_num}, data={self.data})"
 
 class StopAndWaitARQ:
-    """Implements Stop-and-Wait ARQ protocol with timer-based retransmission only."""
+    """Implements Stop-and-Wait ARQ with CRC-based error detection."""
 
     def __init__(self, timeout):
-        self.timeout = timeout  # User-defined timeout period
+        self.timeout = timeout
         self.sender_seq = 0
         self.receiver_seq = 0
         self.timer = None
-        self.ack_received = threading.Event()  # Event to track ACK
+        self.ack_received = threading.Event()
+        self.crc = CRC()  # Initialize CRC class
         """In a Stop-and-Wait ARQ protocol (or similar network protocols), the sender sends a frame and waits for an acknowledgment (ACK) from the receiver before sending the next frame. 
         The threading.Event object is used to:
         Signal when an ACK is received.
@@ -35,13 +46,13 @@ class StopAndWaitARQ:
         wait(timeout=None): Blocks the calling thread until the event is set (i.e., the internal flag becomes True). If a timeout is provided, the thread will wait for up to timeout seconds. If the event is not set within the timeout, the method returns False."""
 
     def start_timer(self, frame):
-        """Starts a timer that will trigger the timeout_handler method if an ACK is not received within the specified timeout period."""
-        self.ack_received.clear()  # Ensure sender waits for a new ACK
-        self.timer = threading.Timer(self.timeout, self.timeout_handler, args=[frame]) 
+        """Starts a timer for retransmission."""
+        self.ack_received.clear()
+        self.timer = threading.Timer(self.timeout, self.timeout_handler, args=[frame])
+        self.timer.start()
         """Creates a threading.Timer object that will call the timeout_handler method after self.timeout seconds.
 
         The args=[frame] parameter passes the current frame to the timeout_handler method."""
-        self.timer.start()  # Starts the timer. If it expires, timeout_handler is called.
 
     def timeout_handler(self, frame):
         """Handles timeout and retransmits the frame."""
@@ -49,9 +60,10 @@ class StopAndWaitARQ:
         self.send_frame(frame.data)
 
     def send_frame(self, data):
-        """Sends a frame and waits for acknowledgment."""
-        frame = Frame(self.sender_seq, data)
-        print(f"\nSender: Sending {frame}")
+        """Sends a frame with CRC checksum."""
+        encoded_data = self.crc.crc_encode(data)  # Append CRC checksum
+        frame = Frame(self.sender_seq, encoded_data)
+        print(f"\nSender: Sending frame + checksum: {frame}")
 
         # Simulate frame loss (10% probability)
         if random.random() < 0.1:
@@ -68,10 +80,14 @@ class StopAndWaitARQ:
         self.receive_frame(frame)
 
     def receive_frame(self, frame):
-        """Receives a frame."""
+        """Receives a frame and checks for errors using CRC."""
         if frame.seq_num != self.receiver_seq:
             print(f"Receiver: Duplicate Frame {frame.seq_num} ignored!")
             return  # No ACK sent
+
+        if not self.crc.crc_check(frame.data):  # Verify CRC checksum
+            print(f"Receiver: Frame {frame.seq_num} corrupted! Requesting retransmission...")
+            return  # Discard frame, no ACK sent
 
         print(f"Receiver: Frame {frame.seq_num} received successfully!")
 
@@ -79,17 +95,20 @@ class StopAndWaitARQ:
         self.send_ack(frame.seq_num)
 
     def send_ack(self, seq_num):
-        """Sends an acknowledgment for the next frame to be sent."""
-        next_seq_num = seq_num ^ 1  # Toggle to the next sequence number
+        """Sends an acknowledgment."""
+        next_seq_num = seq_num ^ 1  # Toggle sequence number
         print(f"Sender: Sending ACK for Frame {next_seq_num}\n")
         
         self.ack_received.set()  # ACK received, stop timer
         if self.timer:
             self.timer.cancel()
         
-        # Toggle sequence numbers for sender and receiver
-        self.sender_seq ^= 1  # Toggle sender's sequence number
-        self.receiver_seq ^= 1  # Toggle receiver's sequence number
+        # Toggle sequence numbers
+        self.sender_seq ^= 1  
+        self.receiver_seq ^= 1 
+        """The sequence number alternates (0 → 1 → 0 → 1), ensuring proper synchronization.
+
+        This mimics the window moving forward by one frame after each successful transmission."""
 
         """The sequence numbers (self.sender_seq and self.receiver_seq) are toggled using the XOR (^) operation with 1.
 
@@ -101,17 +120,16 @@ class StopAndWaitARQ:
         
         If self.sender_seq is 1, it becomes 0 after the operation.
         
-        The same logic applies to self.receiver_seq."""
+        The same logic applies to self.receiver_seq.""" 
 
     def send_data(self, frames):
         """Sends multiple frames using Stop-and-Wait ARQ."""
         for data in frames:
             self.send_frame(data)
-            self.ack_received.wait()  # Wait until ACK is received before sending next frame
-
+            self.ack_received.wait()  # Wait for ACK before sending next frame
 
 def simulate_stop_and_wait():
-    """Function to run Stop-and-Wait simulation."""
+    """Runs the Stop-and-Wait simulation."""
     timeout = int(input("Enter timeout period (seconds): "))
     sender = StopAndWaitARQ(timeout)
 

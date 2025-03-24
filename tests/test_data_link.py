@@ -93,7 +93,7 @@ def test_case_2():
     hub1_devices = [EndDevice(f"Hub1_PC{i+1}", f"AA:BB:CC:DD:EE:1{i}") for i in range(5)]
     hub2_devices = [EndDevice(f"Hub2_PC{i+1}", f"AA:BB:CC:DD:EE:2{i}") for i in range(5)]
 
-    # Connect devices to respective hubs
+    # Connect devices to respective hubs :
     for device in hub1_devices:
         hub1.connect(device)
 
