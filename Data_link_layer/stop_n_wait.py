@@ -93,15 +93,15 @@ class StopAndWaitARQ:
 
         """The sequence numbers (self.sender_seq and self.receiver_seq) are toggled using the XOR (^) operation with 1.
 
-This is a common technique in protocols like the stop-and-wait protocol, where sequence numbers alternate between 0 and 1 to distinguish between consecutive frames.
-
-For example:
-
-If self.sender_seq is 0, it becomes 1 after the operation.
-
-If self.sender_seq is 1, it becomes 0 after the operation.
-
-The same logic applies to self.receiver_seq."""
+        This is a common technique in protocols like the stop-and-wait protocol, where sequence numbers alternate between 0 and 1 to distinguish between consecutive frames.
+        
+        For example:
+        
+        If self.sender_seq is 0, it becomes 1 after the operation.
+        
+        If self.sender_seq is 1, it becomes 0 after the operation.
+        
+        The same logic applies to self.receiver_seq."""
 
     def send_data(self, frames):
         """Sends multiple frames using Stop-and-Wait ARQ."""

@@ -19,7 +19,7 @@ class Device:
 class Bridge:
     """Simulates a network bridge that connects up to 5 ports and forwards traffic based on MAC addresses."""
     
-    MAX_PORTS = 5  # Limit bridge to 5 ports
+    MAX_PORTS = 2  # Limit bridge to 5 ports
     
     def __init__(self):
         self.mac_table = {}  # {MAC -> Port}
