@@ -104,7 +104,7 @@ def simulate_star_topology():
 
     print("Enter Sender Device no(1-5):")
     sender_id = int(input())
-    print("Enter Receiver Device no(1-5):")
+    print("Enter Receiver Device no(2-5):")
     receiver_id = int(input())
     
     if sender_id < 1 or sender_id > 5 or receiver_id < 1 or receiver_id > 5:
