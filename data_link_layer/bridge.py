@@ -37,8 +37,8 @@ class Hub:
 class Bridge:
     """Simulates a network bridge that connects multiple hubs and forwards traffic based on MAC addresses."""
     def __init__(self):
-        self.mac_table = {}  # {MAC -> Hub}
-        self.ports = {}  # {Port -> Hub}
+        self.mac_table = {}  # {MAC -> Hub} konsa device ksi hub mai hai
+        self.ports = {}  # {Port -> Hub} kis port pai konsa hub connected hai
     
     def connect_hub(self, hub, port):
         """Connects a hub to a specific port."""
