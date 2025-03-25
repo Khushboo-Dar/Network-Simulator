@@ -61,6 +61,11 @@ class Bridge:
                     break
             if src_hub:
                 break
+        """Outer loop (for port, hub in self.ports.items()):
+        Iterates through all ports and their connected hubs.
+        
+        Inner loop (for device in hub.devices):
+        Checks each device in the current hub to see if its MAC matches src_mac"""
         
         if not src_hub:
             print(f"Source MAC {src_mac} is unknown. Frame dropped.")
@@ -98,6 +103,10 @@ def bridge_simulation():
 
     num_devices = int(input("Enter number of devices per hub: "))
     devices = [[Device(j+1 + i*num_devices) for j in range(num_devices)] for i in range(num_hubs)]
+    """Creates a 2D list of devices where: Each row i represents devices for hub i, Each column j represents device j in that hub"""
+    """devices = [
+    [Device(1), Device(2), Device(3)],  # Hub 0's devices (IDs 1-3)
+    [Device(4), Device(5), Device(6)]   # Hub 1's devices (IDs 4-6)"""
 
     for i in range(num_hubs):
         for device in devices[i]:
@@ -106,7 +115,9 @@ def bridge_simulation():
     print("\nConnecting hubs to bridge:")
     for i, hub in enumerate(hubs):
         bridge.connect_hub(hub, i+1)
-
+    
+    """Device IDs are assigned sequentially across all hubs (e.g., with 2 hubs and 3 devices: Hub 1 gets devices 1,2,3; Hub 2 gets 4,5,6)"""
+    
     print("\nSimulate Frame Transmission")
     while True:
         hub_idx = int(input("Enter source hub number: ")) - 1
