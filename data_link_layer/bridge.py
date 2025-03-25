@@ -37,7 +37,7 @@ class Hub:
 class Bridge:
     """Simulates a network bridge that connects multiple hubs and forwards traffic based on MAC addresses."""
     def __init__(self):
-        self.mac_table = {}  # {MAC -> Hub} konsa device ksi hub mai hai
+        self.mac_table = {}  # {MAC -> Hub} konsa device ksi hub mai hai {(A, hub 1), ..}
         self.ports = {}  # {Port -> Hub} kis port pai konsa hub connected hai
     
     def connect_hub(self, hub, port):
@@ -93,7 +93,7 @@ def bridge_simulation():
     """Runs the network bridge simulation."""
     bridge = Bridge()
 
-    num_hubs = int(input("Enter number of hubs: "))
+    num_hubs = int(input("Enter number of hubs(max a2): ")) 
     hubs = [Hub(i+1) for i in range(num_hubs)]
 
     num_devices = int(input("Enter number of devices per hub: "))
