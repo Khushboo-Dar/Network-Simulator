@@ -33,17 +33,21 @@ class StopAndWaitARQ:
         self.timer = None
         self.ack_received = threading.Event()
         self.crc = CRC()  # Initialize CRC class
-        """In a Stop-and-Wait ARQ protocol (or similar network protocols), the sender sends a frame and waits for an acknowledgment (ACK) from the receiver before sending the next frame. 
+        """In a Stop-and-Wait ARQ protocol (or similar network protocols), 
+        the sender sends a frame and waits for an acknowledgment (ACK) from the receiver before sending the next frame. 
         The threading.Event object is used to:
-        Signal when an ACK is received.
-        Wait for the ACK before proceeding to the next step."""
+        Signal when an ACK is received. Wait for the ACK before proceeding to the next step."""
+        
         """The threading.Event object has three key methods:
     
-        set(): Sets the internal flag to True. This signals that the event has occurred (e.g., an ACK has been received).
+        1) set(): Sets the internal flag to True. This signals that the event has occurred (e.g., an ACK has been received).
     
-        clear(): Resets the internal flag to False. This indicates that the event has not occurred (e.g., no ACK has been received yet).
+        2) clear(): Resets the internal flag to False. This indicates that the event has not occurred (e.g., no ACK has been received yet).
     
-        wait(timeout=None): Blocks the calling thread until the event is set (i.e., the internal flag becomes True). If a timeout is provided, the thread will wait for up to timeout seconds. If the event is not set within the timeout, the method returns False."""
+        3) wait(timeout=None): Blocks the calling thread until the event is set (i.e., the internal flag becomes True). 
+
+        If a timeout is provided, the thread will wait for up to timeout seconds. If the event is not set within the timeout, 
+        the method returns False."""
 
     def start_timer(self, frame):
         """Starts a timer for retransmission."""
@@ -61,8 +65,8 @@ class StopAndWaitARQ:
 
     def send_frame(self, data):
         """Sends a frame with CRC checksum."""
-        encoded_data = self.crc.crc_encode(data)
-        corrupted_data = self.crc.introduce_error(encoded_data)  # Append CRC checksum
+        encoded_data = self.crc.crc_encode(data) # Append CRC checksum
+        corrupted_data = self.crc.introduce_error(encoded_data)  #introduce error with prob 30%
         frame = Frame(self.sender_seq, corrupted_data)
         print(f"\nSender: Sending frame + checksum: {frame}")
 
@@ -76,6 +80,7 @@ class StopAndWaitARQ:
 
         # Simulate transmission delay
         time.sleep(random.uniform(0.5, 2))
+        """The program sleeps for a random duration between 0.5 and 2 seconds."""
 
         # Receiver processes the frame
         self.receive_frame(frame)
