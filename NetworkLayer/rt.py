@@ -1,4 +1,39 @@
 import ipaddress
+import time
+
+class RIPProtocol:
+    def __init__(self, router_id):
+        self.router_id = router_id
+        self.neighbors = {}  # neighbor_id -> cost
+        self.routing_table = {router_id: (0, router_id)}  # destination -> (cost, next_hop)
+
+    def add_neighbor(self, neighbor_id, cost):
+        self.neighbors[neighbor_id] = cost
+        self.routing_table[neighbor_id] = (cost, neighbor_id)
+
+    def receive_vector(self, from_router, vector):
+        updated = False
+        cost_to_neighbor = self.neighbors.get(from_router, float('inf'))
+        for dest, (neighbor_cost, _) in vector.items():
+            new_cost = cost_to_neighbor + neighbor_cost
+            if dest not in self.routing_table or new_cost < self.routing_table[dest][0]:
+                self.routing_table[dest] = (new_cost, from_router)
+                updated = True
+        return updated
+
+    def send_vector(self):
+        return self.routing_table.copy()
+
+    def get_next_hop(self, destination):
+        return self.routing_table.get(destination, (float('inf'), None))[1]
+
+    def print_routing_table(self):
+        print(f"[RIP-{self.router_id}] Routing Table:")
+        for dest, (cost, next_hop) in sorted(self.routing_table.items()):
+            print(f"  Destination: {dest}, Cost: {cost}, Next Hop: {next_hop}")
+        print()
+
+
 
 def get_network(ip_str, prefix):
     return str(ipaddress.IPv4Network(f"{ip_str}/{prefix}", strict=False).network_address)
@@ -126,6 +161,8 @@ class Router:
             network = get_network(ip, prefix)
             self.routing_table[(network, prefix)] = iface
 
+
+        self.rip = RIPProtocol(name)
         print(f"[{self.name}] Routing Table: {self.routing_table}")
 
     def connect_interface(self, iface, switch):
@@ -191,29 +228,77 @@ class Router:
     def print_arp_table(self):
         print(f"[{self.name}] ARP Table: {self.arp_table}")
 
+    def add_rip_neighbor(self, neighbor_router, cost):
+        self.rip.add_neighbor(neighbor_router.name, cost)
+
+    def exchange_routing_info(self, neighbor_router):
+        updated = neighbor_router.rip.receive_vector(self.name, self.rip.send_vector())
+        return updated
+
+    def print_rip_table(self):
+        self.rip.print_routing_table()
+
+def run_rip_simulation(routers):
+    changed = True
+    while changed:
+        changed = False
+        for r1 in routers:
+            for r2 in routers:
+                if r1 != r2:
+                    changed |= r1.exchange_routing_info(r2)
+    
+    for router in routers:
+        router.print_rip_table()
+
 
 # --------- SIMULATION ---------
 s1 = Switch("Switch1")
 s2 = Switch("Switch2")
 
+# Define routers
 r1 = Router("Router1", {
     "eth1": ("11.11.11.1", "AA:BB:CC:DD:EE:01", 24),
     "eth2": ("22.22.22.1", "AA:BB:CC:DD:EE:02", 24)
 })
 
+r2 = Router("Router2", {
+    "eth1": ("33.33.33.1", "AA:BB:CC:DD:EE:03", 24)
+})
+
+r3 = Router("Router3", {
+    "eth1": ("44.44.44.1", "AA:BB:CC:DD:EE:04", 24)
+})
+
+# Connect interfaces (you may need switches or direct connections here)
+# For now, only connecting r1
 r1.connect_interface("eth1", s1)
 r1.connect_interface("eth2", s2)
 
+# Setup RIP neighbors
+r1.add_rip_neighbor(r2, 1)
+r2.add_rip_neighbor(r1, 1)
+r2.add_rip_neighbor(r3, 2)
+r3.add_rip_neighbor(r2, 2)
+
+# Run RIP simulation after setting neighbors
+run_rip_simulation([r1, r2, r3])
+
+# Setup Hosts
 h1 = Host("PC-A", "11.11.11.10", "AA:AA:AA:AA:AA:01", "11.11.11.1")
 h2 = Host("PC-B", "22.22.22.40", "AA:AA:AA:AA:AA:02", "22.22.22.1")
 
+# Connect hosts and router to switches
 h1.connect(s1, 2)
 s1.connect_device(r1, 3)
 
 h2.connect(s2, 5)
 s2.connect_device(r1, 4)
 
-# Trigger the communication
+# Trigger communication
 h1.send_data("22.22.22.40")
 
+# Print RIP tables
+r1.print_rip_table()
+r2.print_rip_table()
+r3.print_rip_table()
 
