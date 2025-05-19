@@ -45,7 +45,7 @@ class Router:
         self.routing_table = {}  # (network, prefix) -> iface
         self.interface_links = {}
         self.pending_packets = {}
-        self.rip = RIPProtocol(name)
+        self.rip = RIPProtocol(router_id=self.name)
 
         for iface, (ip, mac, prefix) in interfaces.items():
             network = get_network(ip, prefix)
@@ -156,4 +156,24 @@ class Router:
     def print_rip_table(self):
         self.rip.print_routing_table()
 
+def run_rip_simulation(routers, max_iterations=5):
+    router_lookup = {router.name: router for router in routers}
+
+    for i in range(max_iterations):
+        print(f"\n--- RIP ROUND {i+1} ---")
+        updated = False
+
+        for router in routers:
+            for neighbor_id in router.rip.neighbors:
+                neighbor = router_lookup[neighbor_id]
+                updated |= router.rip.receive_vector(neighbor_id, neighbor.rip.routing_table)
+
+        if not updated:
+            print("RIP tables converged.\n")
+            break
+
+    for router in routers:
+        print(f"\nRouter {router.name} RIP Table:")
+        for dest, (cost, next_hop) in router.rip.routing_table.items():
+            print(f"Destination: {dest}, Cost: {cost}, Next Hop: {next_hop}")
 

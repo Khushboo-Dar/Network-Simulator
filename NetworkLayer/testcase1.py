@@ -1,5 +1,5 @@
 from host import Host
-from router import Router
+from router import Router, run_rip_simulation
 from switch import Switch
 from serialLink import SerialLink
 
@@ -30,19 +30,7 @@ s2.connect_device(r1, 4)  # Router eth2 on Switch2 port 4
 
 # ------------------ RIP Setup -----------------
 # No neighbors, but simulate anyway
-def run_rip_simulation(routers, max_iterations=5):
-    for i in range(max_iterations):
-        print(f"\n--- RIP ROUND {i+1} ---")
-        updated = False
-        for router in routers:
-            for neighbor in router.rip_neighbors:
-                updated |= router.exchange_routing_info(neighbor)
-        if not updated:
-            print("RIP tables converged.\n")
-            break
-    for router in routers:
-        print(f"\nRouter {router.name} RIP Table:")
-        router.print_rip_table()
+
 
 # Add no neighbors since it's a single router
 # You can still simulate RIP (it just won't exchange anything)
