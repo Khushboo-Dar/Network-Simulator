@@ -49,7 +49,6 @@ r3.routing_table[("20.0.0.0", 24)] = "Se1/1"
 
 # Simulate PC0 sending data to PC1
 pc0.send_data("20.0.0.2")
-
   
 
 # clear rip routes
