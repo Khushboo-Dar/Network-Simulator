@@ -157,8 +157,8 @@ class Router:
         self.rip.print_routing_table()
 
 def run_rip_simulation(routers, max_iterations=5):
-    # Fix: Use Router objects as keys instead of router names
-    router_lookup = {router: router for router in routers}
+    # Use router name as key so we can look up by name
+    router_lookup = {router.name: router for router in routers}
 
     for i in range(max_iterations):
         print(f"\n--- RIP ROUND {i+1} ---")
@@ -166,7 +166,7 @@ def run_rip_simulation(routers, max_iterations=5):
 
         for router in routers:
             for neighbor_id in router.rip.neighbors:
-                neighbor = router_lookup[neighbor_id]  # This now works correctly
+                neighbor = router_lookup[neighbor_id]  # Now works as neighbor_id is a string (e.g., 'Router3')
                 updated |= router.rip.receive_vector(neighbor_id, neighbor.rip.routing_table)
 
         if not updated:
@@ -175,6 +175,6 @@ def run_rip_simulation(routers, max_iterations=5):
 
     for router in routers:
         print(f"\nRouter {router.name} RIP Table:")
-        for dest, (cost, next_hop) in router.rip.routing_table.items():
-            print(f"Destination: {dest}, Cost: {cost}, Next Hop: {next_hop}")
+        router.rip.print_routing_table()
+
 
