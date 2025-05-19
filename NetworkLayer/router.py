@@ -120,28 +120,36 @@ class Router:
 
         if best_match:
             iface = best_match
-            dst_mac = self.arp_table.get(dst_ip)
-            if dst_mac is None:
-                print(f"[{self.name}] needs MAC of {dst_ip}, sending ARP Request on {iface}")
-                arp_req = {
-                    'type': 'ARP_REQUEST',
-                    'sender_ip': self.interfaces[iface][0],
-                    'sender_mac': self.interfaces[iface][1],
-                    'target_ip': dst_ip
-                }
-                self.pending_packets[dst_ip] = (frame, iface)
-                link_type, *link_data = self.interface_links[iface]
-                if link_type == 'switch':
-                    link_data[0].receive_frame(arp_req, self)
-                elif link_type == 'serial':
-                    link_data[0].transmit(self, arp_req, iface)
-            else:
-                print(f"[{self.name}] MAC for {dst_ip} is {dst_mac}, forwarding data")
-                frame['l2']['src_mac'] = self.interfaces[iface][1]
-                frame['l2']['dst_mac'] = dst_mac
-                link_type, *link_data = self.interface_links[iface]
-                if link_type == 'switch':
+            ip, mac, _ = self.interfaces[iface]
+            link_type, *link_data = self.interface_links.get(iface, (None,))
+            if link_type == 'switch':
+                dst_mac = self.arp_table.get(dst_ip)
+                if dst_mac is None:
+                     print(f"[{self.name}] needs MAC of {dst_ip}, sending ARP Request on {iface}")
+                     self.pending_packets[dst_ip] = (frame, iface)
+                     arp_req = {
+                         'type': 'ARP_REQUEST',
+                         'sender_ip': ip,
+                         'sender_mac': mac,
+                         'target_ip': dst_ip
+                     }
+                     link_data[0].receive_frame(arp_req, self)
+                else:
+                    print(f"[{self.name}] MAC for {dst_ip} is {dst_mac}, forwarding data")
+                    frame['l2'] = {'src_mac': mac, 'dst_mac': dst_mac}
+                    print(f"[{self.name}] prepares L2 header: src_mac={mac}, dst_mac={dst_mac}")
+                    print(f"[{self.name}] forwarding DATA to {dst_ip} via MAC {dst_mac}")
                     link_data[0].receive_frame(frame, self)
+
+            elif link_type == 'serial':
+                print(f"[{self.name}] forwarding frame over serial on {iface}")
+                link_data[0].transmit(self, frame, iface)
+        else:
+            print(f"[{self.name}] No route to {dst_ip} found in routing table")
+
+    def print_arp_table(self):
+        print(f"[{self.name}] ARP Table: {self.arp_table}")
+
 
     def add_rip_neighbor(self, neighbor_router, cost):
         self.rip.add_neighbor(neighbor_router.name, cost)
@@ -165,7 +173,7 @@ def reset_to_directly_connected(router):
         directly_connected[(network, prefix)] = iface
     router.routing_table = directly_connected
 
-    
+
 
 def run_rip_simulation(routers, max_iterations=5):
     # Use router name as key so we can look up by name
