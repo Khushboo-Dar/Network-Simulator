@@ -1,7 +1,11 @@
 from host import Host
-from router import Router
+from router import Router, run_rip_simulation
 from switch import Switch
 from serialLink import SerialLink
+import ipaddress
+
+def get_network(ip, prefix):
+    return str(ipaddress.ip_network(f"{ip}/{prefix}", strict=False).network_address)
 
 #---------- SIMULATION TOPOLOGY -------------
 
@@ -42,31 +46,49 @@ r2.connect_interface("Se1/1", link2, "Se1/1")
 r3.connect_interface("Se1/0", link1, "Se1/0")
 r3.connect_interface("Se1/1", link2, "Se1/1")
 
-# ------------ RIP CONFIGURATION --------------
-r1.add_rip_neighbor(r3, cost=1)
-r2.add_rip_neighbor(r3, cost=1)
-r3.add_rip_neighbor(r1, cost=1)
-r3.add_rip_neighbor(r2, cost=1)
+# --------- STATIC ROUTING PHASE --------------
 
-def run_rip_simulation(routers, max_iterations=5):
-    for i in range(max_iterations):
-        print(f"\n--- RIP ROUND {i+1} ---")
-        updated = False
-        for router in routers:
-            for neighbor in router.rip_neighbors:
-                updated |= router.exchange_routing_info(neighbor)
-        if not updated:
-            print("RIP tables converged.\n")
-            break
-    for router in routers:
-        print(f"\nRouter {router.name} RIP Table:")
-        router.print_rip_table()
+# Add static routes manually to routing_table
+r1.routing_table[(get_network("20.0.0.0", 24), 24)] = "Se1/0"  # via r3
+r2.routing_table[(get_network("10.0.0.0", 24), 24)] = "Se1/1"  # via r3
+r3.routing_table[(get_network("10.0.0.0", 24), 24)] = "Se1/0"  # to r1
+r3.routing_table[(get_network("20.0.0.0", 24), 24)] = "Se1/1"  # to r2
 
-# ------------ RUN SIMULATION -----------------
-run_rip_simulation([r1, r2, r3])
+# ------------ SEND DATA: STATIC ROUTING -----------------
 
-print("\n---- Simulating PC0 -> PC1 ----")
+print("\n==== [STATIC ROUTING] PC0 -> PC1 ====")
 pc0.send_data("20.0.0.2")
 
-print("\n---- Simulating PC1 -> PC0 ----")
+print("\n==== [STATIC ROUTING] PC1 -> PC0 ====")
+pc1.send_data("10.0.0.2")
+
+# ----------- CLEAR STATIC ROUTES BEFORE RIP -------------
+
+def reset_to_directly_connected(router):
+    directly_connected = {}
+    for iface, (ip, mac, prefix) in router.interfaces.items():
+        network = get_network(ip, prefix)
+        directly_connected[(network, prefix)] = iface
+    router.routing_table = directly_connected
+
+reset_to_directly_connected(r1)
+reset_to_directly_connected(r2)
+reset_to_directly_connected(r3)
+
+# ------------ RIP CONFIGURATION -------------------------
+
+r1.rip.add_neighbor(r3.name, cost=1)
+r2.rip.add_neighbor(r3.name, cost=1)
+r3.rip.add_neighbor(r1.name, cost=1)
+r3.rip.add_neighbor(r2.name, cost=1)
+
+# ------------ RUN RIP -------------------------
+run_rip_simulation([r1, r2, r3])
+
+# ------------ SEND DATA: RIP ROUTING -----------------
+
+print("\n==== [RIP ROUTING] PC0 -> PC1 ====")
+pc0.send_data("20.0.0.2")
+
+print("\n==== [RIP ROUTING] PC1 -> PC0 ====")
 pc1.send_data("10.0.0.2")
