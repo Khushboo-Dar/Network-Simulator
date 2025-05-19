@@ -1,5 +1,5 @@
 from host import Host
-from router import Router
+from router import Router, run_rip_simulation
 from switch import Switch
 from serialLink import SerialLink
 
@@ -43,24 +43,10 @@ r3.connect_interface("Se1/0", link1, "Se1/0")
 r3.connect_interface("Se1/1", link2, "Se1/1")
 
 # ------------ RIP CONFIGURATION --------------
-r1.add_rip_neighbor(r3, cost=1)
-r2.add_rip_neighbor(r3, cost=1)
-r3.add_rip_neighbor(r1, cost=1)
-r3.add_rip_neighbor(r2, cost=1)
-
-def run_rip_simulation(routers, max_iterations=5):
-    for i in range(max_iterations):
-        print(f"\n--- RIP ROUND {i+1} ---")
-        updated = False
-        for router in routers:
-            for neighbor in router.rip_neighbors:
-                updated |= router.exchange_routing_info(neighbor)
-        if not updated:
-            print("RIP tables converged.\n")
-            break
-    for router in routers:
-        print(f"\nRouter {router.name} RIP Table:")
-        router.print_rip_table()
+r1.rip.add_neighbor(r3, cost=1)
+r2.rip.add_neighbor(r3, cost=1)
+r3.rip.add_neighbor(r1, cost=1)
+r3.rip.add_neighbor(r2, cost=1)
 
 # ------------ RUN SIMULATION -----------------
 run_rip_simulation([r1, r2, r3])
