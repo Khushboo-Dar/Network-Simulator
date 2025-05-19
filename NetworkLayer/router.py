@@ -156,6 +156,17 @@ class Router:
     def print_rip_table(self):
         self.rip.print_routing_table()
 
+#clear static routes
+
+def reset_to_directly_connected(router):
+    directly_connected = {}
+    for iface, (ip, mac, prefix) in router.interfaces.items():
+        network = get_network(ip, prefix)
+        directly_connected[(network, prefix)] = iface
+    router.routing_table = directly_connected
+
+    
+
 def run_rip_simulation(routers, max_iterations=5):
     # Use router name as key so we can look up by name
     router_lookup = {router.name: router for router in routers}
@@ -176,5 +187,6 @@ def run_rip_simulation(routers, max_iterations=5):
     for router in routers:
         print(f"\nRouter {router.name} RIP Table:")
         router.rip.print_routing_table()
+
 
 
