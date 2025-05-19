@@ -14,51 +14,53 @@ def run_rip_simulation(routers):
     for router in routers:
         router.print_rip_table()
 
-# ----- Network Topology -----
-s1 = Switch("Switch1")
-s2 = Switch("Switch2")
+# ----- Switches -----
+sw1 = Switch("Switch1")
+sw2 = Switch("Switch2")
 
-# Create Router and assign IPs to interfaces
-r1 = Router("Router1", {
-    "eth1": ("11.11.11.1", "AA:BB:CC:DD:EE:01", 24),
-    "eth2": ("22.22.22.1", "AA:BB:CC:DD:EE:02", 24)
+# ----- Routers -----
+r1 = Router("R1", {
+    "eth0": ("10.0.0.1", "AA:BB:CC:DD:EE:11", 24),
+    "se1/0": ("192.168.1.1", "AA:BB:CC:DD:EE:01", 30)
 })
 
-r2 = Router("Router2", {
-    "eth1": ("33.33.33.1", "AA:BB:CC:DD:EE:03", 24)
+r2 = Router("R2", {
+    "eth0": ("20.0.0.1", "AA:BB:CC:DD:EE:02", 24),
+    "se1/1": ("192.168.2.2", "AA:BB:CC:DD:EE:03", 30)
 })
 
-r3 = Router("Router3", {
-    "eth1": ("44.44.44.1", "AA:BB:CC:DD:EE:04", 24)
+r3 = Router("R3", {
+    "se1/0": ("192.168.1.2", "AA:BB:CC:DD:EE:31", 30),
+    "se1/1": ("192.168.2.1", "AA:BB:CC:DD:EE:32", 30)
 })
 
-# Connect Router interfaces to Switches
-r1.connect_interface("eth1", s1)
-r1.connect_interface("eth2", s2)
-
-# RIP Neighbor Setup
-r1.add_rip_neighbor(r2, 1)
-r2.add_rip_neighbor(r1, 1)
-r2.add_rip_neighbor(r3, 2)
-r3.add_rip_neighbor(r2, 2)
-
-# Run RIP Distance Vector Routing Simulation
-run_rip_simulation([r1, r2, r3])
+# ----- Serial Links -----
+link1 = SerialLink(r1, "se1/0", r3, "se1/0")
+link2 = SerialLink(r2, "se1/1", r3, "se1/1")
 
 # ----- Hosts -----
-h1 = Host("PC-A", "11.11.11.10", "AA:AA:AA:AA:AA:01", "11.11.11.1")
-h2 = Host("PC-B", "22.22.22.40", "AA:AA:AA:AA:AA:02", "22.22.22.1")
+pc0 = Host("PC0", "10.0.0.2", "AA:AA:AA:AA:AA:01", "10.0.0.1")
+pc1 = Host("PC1", "20.0.0.2", "AA:AA:AA:AA:AA:02", "20.0.0.1")
 
-# Connect Hosts to Switches
-h1.connect(s1, 2)  # PC-A on Switch1 port 2
-s1.connect_device(r1, 3)  # Router eth1 on Switch1 port 3
+# ----- Connect Hosts to Switches -----
+pc0.connect(sw1, 2)
+sw1.connect_device(r1, 3)
 
-h2.connect(s2, 5)  # PC-B on Switch2 port 5
-s2.connect_device(r1, 4)  # Router eth2 on Switch2 port 4
+r1.connect_interface("eth0", sw1)
+r2.connect_interface("eth0", sw2)
 
-# Trigger PC-A sending data to PC-B
-h1.send_data("22.22.22.40")
+pc1.connect(sw2, 2)
+sw2.connect_device(r2, 3)
 
-# Now simulate PC-B replying to PC-A
-h2.send_data("11.11.11.10")
+# ----- RIP Neighbor Setup -----
+r1.add_rip_neighbor(r3, 1)
+r2.add_rip_neighbor(r3, 1)
+r3.add_rip_neighbor(r1, 1)
+r3.add_rip_neighbor(r2, 1)
 
+# ----- Run RIP Simulation -----
+run_rip_simulation([r1, r2, r3])
+
+# ----- Trigger Communication -----
+pc0.send_data("20.0.0.2")
+pc1.send_data("10.0.0.2")
