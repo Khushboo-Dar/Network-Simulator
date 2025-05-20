@@ -1,5 +1,5 @@
 from host import Host
-from router import Router, run_rip_simulation, reset_to_directly_connected
+from router import Router, run_rip_simulation 
 from switch import Switch
 from serialLink import SerialLink
 
@@ -51,19 +51,20 @@ r3.routing_table[("20.0.0.0", 24)] = "Se1/1"
 pc0.send_data("20.0.0.2")
   
 
-# clear rip routes
+r1.rip.routing_table.clear()
 
-reset_to_directly_connected(r1)
-reset_to_directly_connected(r2)
-reset_to_directly_connected(r3)
 
 
 # RIP CONFIGURATION 
-
 r1.rip.add_neighbor(r3.name, cost=1)
 r2.rip.add_neighbor(r3.name, cost=1)
 r3.rip.add_neighbor(r1.name, cost=1)
 r3.rip.add_neighbor(r2.name, cost=1)
+
+# Add directly connected networks
+r1.add_directly_connected_to_rip()
+r2.add_directly_connected_to_rip()
+r3.add_directly_connected_to_rip()
 
 # RUN RIP 
 run_rip_simulation([r1, r2, r3])
@@ -75,3 +76,6 @@ pc0.send_data("20.0.0.2")
 
 print("\n==== [RIP ROUTING] PC1 -> PC0 ====")
 pc1.send_data("10.0.0.2")
+
+
+
