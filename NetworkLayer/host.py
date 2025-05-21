@@ -1,7 +1,8 @@
 import ipaddress
-
+#determines the network address from an IP and subnet mask.
 def get_network(ip_str, prefix):
     return str(ipaddress.IPv4Network(f"{ip_str}/{prefix}", strict=False).network_address)
+#Used for checking if two IPs are in the same network 
 
 class Host:
     def __init__(self, name, ip, mac, gateway_ip):
@@ -12,7 +13,7 @@ class Host:
         self.arp_table = {}
         self.connected_port = None
         self.connected_switch = None
-
+# Connects the host to a specific switch and port.
     def connect(self, switch, port):
         self.connected_port = port
         self.connected_switch = switch
@@ -28,7 +29,7 @@ class Host:
        if my_network == dest_network:
            if dest_ip not in self.arp_table:
                print(f"[{self.name}] doesn't know MAC of {dest_ip}, sending ARP Request")
-               self.pending_packet = {'dst_ip': dest_ip, 'is_direct': True}
+               self.pending_packet = {'dst_ip': dest_ip, 'is_direct': True} #it remembers whom it wanted to send using self.pending_packet.
                self.send_arp_request(dest_ip)
                return
            dst_mac = self.arp_table[dest_ip]
@@ -39,7 +40,7 @@ class Host:
                self.pending_packet = {'dst_ip': dest_ip, 'is_direct': False}
                self.send_arp_request(self.gateway_ip)
                return
-           dst_mac = self.arp_table[self.gateway_ip]
+           dst_mac = self.arp_table[self.gateway_ip] #use known gateway MAC.
      
        # Yahan tak pohonchne ka matlab MAC mil chuka hai, directly send karo
        print(f"[{self.name}] prepares L2 header: src_mac={self.mac}, dst_mac={dst_mac}")
@@ -52,7 +53,7 @@ class Host:
        self.connected_switch.receive_frame(frame, self)
 
 
-    def send_arp_request(self, target_ip):
+    def send_arp_request(self, target_ip):#to learn MAC address of target_ip
         frame = {
             'type': 'ARP_REQUEST',
             'sender_ip': self.ip,

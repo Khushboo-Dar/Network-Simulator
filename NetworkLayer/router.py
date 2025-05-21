@@ -35,16 +35,18 @@ class RIPProtocol:
 
 def get_network(ip, prefix):
     return str(ipaddress.ip_network(f"{ip}/{prefix}", strict=False).network_address)
+#strict=False means it won't error if the IP isn't the network address itself.
+
 
 
 class Router:
     def __init__(self, name, interfaces):
         self.name = name
         self.interfaces = interfaces  # iface -> (ip, mac, prefix)
-        self.arp_table = {}
+        self.arp_table = {} #IP->MAC
         self.routing_table = {}  # (network, prefix) -> iface
-        self.interface_links = {}
-        self.pending_packets = {}
+        self.interface_links = {}# iface -> (link_type, link_obj,peer_iface)
+        self.pending_packets = {}#IP -> (frame, out_iface)
         self.rip = RIPProtocol(router_id=self.name)
 
         for iface, (ip, mac, prefix) in interfaces.items():
@@ -54,6 +56,7 @@ class Router:
         print(f"[{self.name}] Routing Table: {self.routing_table}")
 
     def connect_interface(self, iface, link, peer_iface=None):
+        #If peer_iface is given, it's a serial link connecting two routers.
         if peer_iface:
             self.interface_links[iface] = ('serial', link, peer_iface)
         else:
@@ -122,6 +125,7 @@ class Router:
             iface = best_match
             ip, mac, _ = self.interfaces[iface]
             link_type, *link_data = self.interface_links.get(iface, (None,))
+            #link data mai switch ya serial hoga
             if link_type == 'switch':
                 dst_mac = self.arp_table.get(dst_ip)
                 if dst_mac is None:

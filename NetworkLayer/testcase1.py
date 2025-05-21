@@ -6,7 +6,7 @@ from serialLink import SerialLink
 s1 = Switch("Switch1")
 s2 = Switch("Switch2")
 
-# Create Router and assign IPs to interfaces
+# Create Router and assign IPs to interfaces  { name,intefaces}
 r1 = Router("Router1", {
     "eth1": ("11.11.11.1", "AA:BB:CC:DD:EE:01", 24),
     "eth2": ("22.22.22.1", "AA:BB:CC:DD:EE:02", 24)
@@ -16,7 +16,7 @@ r1 = Router("Router1", {
 r1.connect_interface("eth1", s1)  # Connect eth1 to Switch1
 r1.connect_interface("eth2", s2)  # Connect eth2 to Switch2
 
-# Create Hosts
+# Create Hosts name,ip,mac,gateway
 h1 = Host("PC-A", "11.11.11.10", "AA:AA:AA:AA:AA:01", "11.11.11.1")  # PC-A, on subnet 11.11.11.0/24
 h2 = Host("PC-B", "22.22.22.40", "AA:AA:AA:AA:AA:02", "22.22.22.1")  # PC-B, on subnet 22.22.22.0/24
 

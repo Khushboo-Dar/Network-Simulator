@@ -9,7 +9,9 @@ class Switch:
         print(f"[{self.name}] connected {device.name if hasattr(device, 'name') else 'Router'} at port {port}")
 
     def receive_frame(self, frame, sender):
-        sender_port = self.find_port(sender)
+        sender_port = self.find_port(sender) #Gets the port number on which the sender is connected .
+
+
 
         if 'sender_mac' in frame:
             self.mac_table[frame['sender_mac']] = sender_port
@@ -20,7 +22,9 @@ class Switch:
 
         if frame['type'] == 'ARP_REQUEST':
             for port, device in self.ports.items():
-                if device != sender:
+                if device != sender:#Floods the ARP request to all other devices except the sender.
+
+
                     print(f"[{self.name}] flooding ARP Request to {getattr(device, 'name', 'Router')}")
                     device.receive_arp_request(frame)
 
@@ -32,7 +36,8 @@ class Switch:
                 print(f"[{self.name}] unicasting ARP Reply to {getattr(dest_device, 'name', 'Router')}")
                 dest_device.receive_arp_reply(frame)
 
-        elif frame['type'] == 'DATA':
+        elif frame['type'] == 'DATA': #For regular data frames (e.g., after ARP is done and MAC is known):
+
             dst_mac = frame['l2']['dst_mac']
             if dst_mac in self.mac_table:
                 out_port = self.mac_table[dst_mac]
