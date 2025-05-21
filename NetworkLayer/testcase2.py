@@ -52,6 +52,10 @@ pc0.send_data("20.0.0.2")
   
 
 r1.rip.routing_table.clear()
+# Reset ARP tables before starting a new test
+pc0.arp_table.clear()
+pc1.arp_table.clear()
+
 
 
 

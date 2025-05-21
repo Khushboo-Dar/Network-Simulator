@@ -12,7 +12,7 @@ class RIPProtocol:
 
     def receive_vector(self, from_router, vector):
      updated = False
-     cost_to_neighbor = 1  # RIP always assumes hop count of 1
+     cost_to_neighbor = 1  # RIP always assumes hop count of 1 (direct)
  
      for dest_router, (cost, _) in vector.items():
          if dest_router == self.router_id:

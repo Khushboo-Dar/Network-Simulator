@@ -37,9 +37,17 @@ h2.send_data("11.11.11.10")
 # ------------------ RIP ROUTING ------------------
 # Clear static routes
 r1.rip.routing_table.clear()
+h1.arp_table.clear()
+h2.arp_table.clear()
+
+
+r1.add_directly_connected_to_rip()
+
 
 print("\n==== RUNNING RIP (No Neighbors) ====")
 run_rip_simulation([r1])  # Won’t learn anything, but simulates RIP
+
+
 
 print("\n==== RIP ROUTING: PC-A -> PC-B ====")
 h1.send_data("22.22.22.40")
