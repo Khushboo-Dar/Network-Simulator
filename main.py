@@ -1,3 +1,13 @@
+import os
+import sys
+
+# Get the absolute path of the project root directory
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Add the project root to sys.path
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from Data_link_layer.bridge import bridge_simulation
 from Data_link_layer.error_control import crc_simulation
 from Data_link_layer.stop_n_wait import simulate_stop_and_wait
