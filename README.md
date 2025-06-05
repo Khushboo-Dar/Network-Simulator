@@ -113,3 +113,10 @@ set PYTHONPATH=%CD%       # Windows (cmd)
 - **Khushboo**
 - **Afsheen**
 - **Sibgat**
+
+```bash
+python3 -m test_cases.test_arp_resolution
+python3 -m test_cases.test_assign_classless_ips
+python3 -m test_cases.test_router_basic
+python3 -m test_cases.test_static_routing
+```
