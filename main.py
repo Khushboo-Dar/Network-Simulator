@@ -1,7 +1,7 @@
 from Data_link_layer.bridge import bridge_simulation
 from Data_link_layer.error_control import crc_simulation
 from Data_link_layer.stop_n_wait import simulate_stop_and_wait
-from physical_layer.physical_layer import simulate_dedicated_link, simulate_star_topology
+from Physical_layer.physical_layer import simulate_dedicated_link, simulate_star_topology
 from tests.test_data_link import test_case_1, test_case_2, test_case_3  # Import test cases
 
 
