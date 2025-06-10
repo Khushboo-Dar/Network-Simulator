@@ -5,6 +5,7 @@ from physical_layer.physical_layer import simulate_dedicated_link, simulate_star
 from tests.test_data_link import test_case_1, test_case_2, test_case_3
 from NetworkLayer.testcase1 import testcase1
 from NetworkLayer.testcase2 import testcase2
+from Data_link_layer.gbn import main as gbn_main
 
 
 def main():
@@ -20,7 +21,8 @@ def main():
         print("8.  Testing CSMA/CD")
         print("9. Network Test Case 1 (Basic Router)")
         print("10. Network Test Case 2 (Three Routers with RIP)")
-        print("11. Exit")
+        print("11 GBN Simulation test")
+        print("12. Exit")
         print("============================================")
 
         choice = input("Enter your choice (1-11): ")
@@ -64,6 +66,11 @@ def main():
             print("\nRunning Network Test Case 2...")
             testcase2()
         elif choice == '11':
+            print("\nRunning GBN Simulation")
+            gbn_main()            
+            
+            
+        elif choice == '12':
             print("\nExiting Network Simulator. Goodbye!")
             break
         else:
