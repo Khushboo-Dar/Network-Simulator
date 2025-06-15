@@ -6,6 +6,7 @@ class Frame:
         self.seq_num = seq_num
         self.data = data
     
+    
     def __repr__(self):
         return f"Frame(seq={self.seq_num}, data='{self.data}')"
 
