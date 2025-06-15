@@ -1,5 +1,4 @@
 import threading
-import random
 from TransportLayer.sliding_window import go_back_n_send, go_back_n_receive
 
 class TransportLayer:
@@ -7,6 +6,7 @@ class TransportLayer:
         self.port_table = {}  # port_no: process_name
         self.lock = threading.Lock()
         self.next_ephemeral = 1024
+        self.last_source_port = None  # ✅ Stores the last sender's port
 
     def assign_port(self, process_name, port_no=None):
         with self.lock:
@@ -27,7 +27,7 @@ class TransportLayer:
         go_back_n_send(data, channel, src_port, dst_port)
 
     def receive(self, port, channel):
-        # Use Go-Back-N for reliable delivery
-        data = go_back_n_receive(channel, port)
-        print(f"[Transport] Received at port {port}: {data}")
-        return data
+        result = go_back_n_receive(channel, port)
+        self.last_source_port = result["src_port"]  
+        return result["data"]
+
