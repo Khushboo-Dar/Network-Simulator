@@ -224,17 +224,35 @@ class GoBackNProtocol:
 def get_user_input():
     """Get protocol parameters from user"""
 
-    window_size = int(input("Enter Window Size (1-8): "))
-    
-            
-    timeout = float(input("Enter Timeout Duration (seconds, 1-5): "))
-        
-            
-    num_frames = int(input("Enter Number of Frames (1-12): "))
-        
-            
-    
+    while True:
+        try:
+            window_size = int(input("Enter Window Size (1-8): "))
+            if 1 <= window_size <= 8:
+                break
+            print("Window size must be between 1 and 8.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
+    while True:
+        try:
+            timeout = float(input("Enter Timeout Duration (seconds, 1-5): "))
+            if 1 <= timeout <= 5:
+                break
+            print("Timeout must be between 1 and 5 seconds.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+    while True:
+        try:
+            num_frames = int(input("Enter Number of Frames (1-12): "))
+            if 1 <= num_frames <= 12:
+                break
+            print("Number of frames must be between 1 and 12.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
     return window_size, timeout, num_frames
+
 
 def main():
     """Main function to run the Go-Back-N simulation"""
@@ -252,5 +270,10 @@ def main():
     
     print("SIMULATION COMPLETED!")
 
-if __name__ == "__main__":
-    main()
+def simulate_go_back_n():
+    print("GO-BACK-N ARQ PROTOCOL SIMULATOR")
+    window_size, timeout, num_frames = get_user_input()
+    data_list = [f"DATA_{i+1}" for i in range(num_frames)]
+    protocol = GoBackNProtocol(window_size, timeout, num_frames)
+    protocol.run_protocol(data_list)
+    print("SIMULATION COMPLETED!")

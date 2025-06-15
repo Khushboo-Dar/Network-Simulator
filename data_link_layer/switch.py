@@ -1,12 +1,3 @@
-import os
-import sys
-
-# Get the absolute path of the project root directory
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-# Add the project root to sys.path
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
 from Data_link_layer.frame import Frame
 #The Switch class represents a network switch that can learn MAC addresses 
 #and forward frames based on its MAC address table.
