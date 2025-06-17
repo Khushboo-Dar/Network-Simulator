@@ -5,8 +5,8 @@ import threading
 import time
 
 def simulate_transport_layer():
-    channel = []  # Simulated channel (can be a dict or list depending on your transport layer)
-    transport = TransportLayer()
+    channel = {}  # Correct type: dictionary for src-dst port mapping
+    transport = TransportLayer(channel)
 
     print("\n" + "="*60)
     print("========== TRANSPORT & APPLICATION LAYER DEMO ==========")
@@ -59,7 +59,7 @@ def simulate_transport_layer():
             telnet_server_thread = threading.Thread(target=telnet_server, args=(transport, telnet_port, channel))
             telnet_server_thread.start()
 
-            time.sleep(0.2)  # Let server start
+            time.sleep(0.2)  # Let server be ready
 
             telnet_client(transport, telnet_port, username, password, command, channel)
 

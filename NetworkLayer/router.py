@@ -4,7 +4,7 @@ class RIPProtocol:
     def __init__(self, router_id):
         self.router_id = router_id
         self.neighbors = {}  # neighbor_id -> cost (ditectly connected)
-        self.routing_table = {self.router_id: (0, self.router_id)}  # destination -> (cost, next_hop) --> Stores the best known paths to all destinations
+        self.routing_table = {self.router_id: (0, self.router_id), '0.0.0.0/0': (float('inf'), None)}  # destination -> (cost, next_hop) --> Stores the best known paths to all destinations
 
     def add_neighbor(self, neighbor_id, cost): # direct connection between the routers
         self.neighbors[neighbor_id] = cost # --> Adds a neighbor to the routers neighbor list
@@ -19,6 +19,14 @@ class RIPProtocol:
              continue  # Skip routes to self
  
          new_cost = cost + cost_to_neighbor
+
+         # Special handling for default route
+         if dest_router == '0.0.0.0/0':
+                if new_cost < self.routing_table.get('0.0.0.0/0', (float('inf'), None))[0]:
+                    self.routing_table['0.0.0.0/0'] = (new_cost, from_router)
+                    print(f"  {self.router_id}: Updated default route via {from_router}, cost {new_cost}")
+                    updated = True
+                continue
  
          if dest_router not in self.routing_table:
              self.routing_table[dest_router] = (new_cost, from_router)
@@ -42,9 +50,25 @@ class RIPProtocol:
 
     def print_routing_table(self):
         print(f"[RIP-{self.router_id}] Routing Table:")
-        for dest, (cost, next_hop) in sorted(self.routing_table.items()):
+
+        # Separate default route from other routes
+        regular_routes = []
+        default_route = None
+
+        for dest, (cost, next_hop) in self.routing_table.items():
+            if dest == '0.0.0.0/0':
+                default_route = (dest, cost, next_hop)
+            else:
+                regular_routes.append((dest, cost, next_hop))
+
+        # Sort regular routes (excluding default route)
+        for dest, cost, next_hop in sorted(regular_routes):
             print(f"  Destination: {dest}, Cost: {cost}, Next Hop: {next_hop}")
-        print()
+
+        # Always print default route last if it exists
+        if default_route:
+            dest, cost, next_hop = default_route
+            print(f"  Destination: {dest}, Cost: {cost}, Next Hop: {next_hop}")
 
 
 def get_network(ip, prefix):
@@ -76,6 +100,8 @@ class Router:
          network_id = f"{network}/{prefix}"
          self.rip.routing_table[network_id] = (0, self.name)
          
+     # Initialize default route
+     self.routing_table[('0.0.0.0', '0')] = next(iter(self.interfaces.keys())) 
 
 
     def connect_interface(self, iface, link, peer_iface=None):
@@ -144,6 +170,12 @@ class Router:
                 best_match = iface
                 best_prefix = prefix
 
+         # If no specific route found, check for default route (0.0.0.0/0)
+        if best_match is None and ('0.0.0.0', '0') in self.routing_table:
+            best_match = self.routing_table[('0.0.0.0', '0')]
+            print(f"[{self.name}] Using default route (0.0.0.0/0) for {dst_ip}")
+
+
         if best_match:
             iface = best_match
             ip, mac, _ = self.interfaces[iface]
@@ -189,11 +221,6 @@ class Router:
         print(f"[{self.name}] ARP Table: {self.arp_table}")
 
 
-#clear static routes
-
-
-
-
 
 def run_rip_simulation(routers, max_iterations=15):
     router_lookup = {router.name: router for router in routers}
@@ -214,11 +241,18 @@ def run_rip_simulation(routers, max_iterations=15):
         if not updated:
             print("RIP tables converged.\n")
             break
+    
+    for router in routers:
+        if '0.0.0.0/0' not in router.rip.routing_table:
+            # Set default route to lowest-cost neighbor
+            if router.rip.neighbors:
+                best_neighbor = min(router.rip.neighbors.items(), key=lambda x: x[1])
+                router.rip.routing_table['0.0.0.0/0'] = (best_neighbor[1] + 1, best_neighbor[0])
+
 
     # Final RIP tables
     for router in routers:
         print(f"\nRouter {router.name} RIP Table:")
         router.rip.print_routing_table()
-
 
 

@@ -30,3 +30,7 @@ class TransportLayer:
         result = go_back_n_receive(channel, port)
         self.last_source_port = result["src_port"]  
         return result["data"]
+<<<<<<< HEAD
+=======
+
+>>>>>>> physical_layer_sibgat
