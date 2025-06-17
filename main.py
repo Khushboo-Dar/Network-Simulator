@@ -8,13 +8,13 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from Data_link_layer.bridge import bridge_simulation
-from Data_link_layer.error_control import crc_simulation
+from data_link_layer.bridge import bridge_simulation
+from data_link_layer.error_control import crc_simulation
 from physical_layer.physical_layer import simulate_dedicated_link, simulate_star_topology
-from Data_link_layer.test_data_link import test_case_1, test_case_2, test_case_3
+from data_link_layer.test_data_link import test_case_1, test_case_2, test_case_3
 from NetworkLayer.testcase1 import testcase1
 from NetworkLayer.testcase2 import testcase2
-from Data_link_layer.gbn import simulate_go_back_n
+from data_link_layer.gbn import simulate_go_back_n
 from TransportLayer.test_transport_app import simulate_transport_layer
 
 def main():
