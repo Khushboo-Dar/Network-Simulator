@@ -1,7 +1,7 @@
-from NetworkLayer.host import Host
-from NetworkLayer.router import Router, run_rip_simulation
-from NetworkLayer.switch import Switch
-from NetworkLayer.serialLink import SerialLink
+from host import Host
+from router import Router, run_rip_simulation
+from switch import Switch
+from serialLink import SerialLink
 def testcase2():
     """Test case 2: Three routers with serial links and RIP routing"""
     s1 = Switch("Switch1")

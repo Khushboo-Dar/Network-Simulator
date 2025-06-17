@@ -75,34 +75,30 @@ def get_network(ip, prefix):
     return str(ipaddress.ip_network(f"{ip}/{prefix}", strict=False).network_address)
 #strict=False means it won't error if the IP isn't the network address itself.
 
-
-
 class Router:
     def __init__(self, name, interfaces):
         self.name = name
         self.interfaces = interfaces  # iface -> (ip, mac, prefix)
-        self.arp_table = {} #IP->MAC
+        self.arp_table = {}  # IP -> MAC
         self.routing_table = {}  # (network, prefix) -> iface
-        self.interface_links = {}# iface -> (link_type, link_obj,peer_iface)
-        self.pending_packets = {}#IP -> (frame, out_iface)
+        self.interface_links = {}  # iface -> (link_type, link_obj, peer_iface)
+        self.pending_packets = {}  # IP -> (frame, out_iface)
         self.rip = RIPProtocol(router_id=self.name)
 
         for iface, (ip, mac, prefix) in interfaces.items():
             network = get_network(ip, prefix)
-            self.routing_table[(network, prefix)] = iface
+            self.routing_table[(network, int(prefix))] = iface
 
         print(f"[{self.name}] Routing Table: {self.routing_table}")
 
-    
     def add_directly_connected_to_rip(self):
-     for iface, (ip, _, prefix) in self.interfaces.items():
-         network = get_network(ip, prefix)
-         network_id = f"{network}/{prefix}"
-         self.rip.routing_table[network_id] = (0, self.name)
-         
-     # Initialize default route
-     self.routing_table[('0.0.0.0', '0')] = next(iter(self.interfaces.keys())) 
+        for iface, (ip, _, prefix) in self.interfaces.items():
+            network = get_network(ip, prefix)
+            network_id = f"{network}/{prefix}"
+            self.rip.routing_table[network_id] = (0, self.name)
 
+        # Initialize default route
+        self.routing_table[('0.0.0.0', 0)] = next(iter(self.interfaces.keys()))
 
     def connect_interface(self, iface, link, peer_iface=None):
         #If peer_iface is given, it's a serial link connecting two routers.
@@ -165,16 +161,16 @@ class Router:
         dst_ip_obj = ipaddress.IPv4Address(dst_ip)
 
         for (net_str, prefix), iface in self.routing_table.items():
+            prefix = int(prefix)  # Ensure prefix is an integer
             network = ipaddress.IPv4Network(f"{net_str}/{prefix}", strict=False)
             if dst_ip_obj in network and prefix > best_prefix:
                 best_match = iface
                 best_prefix = prefix
 
-         # If no specific route found, check for default route (0.0.0.0/0)
-        if best_match is None and ('0.0.0.0', '0') in self.routing_table:
-            best_match = self.routing_table[('0.0.0.0', '0')]
+        # If no specific route found, check for default route (0.0.0.0/0)
+        if best_match is None and ('0.0.0.0', 0) in self.routing_table:
+            best_match = self.routing_table[('0.0.0.0', 0)]
             print(f"[{self.name}] Using default route (0.0.0.0/0) for {dst_ip}")
-
 
         if best_match:
             iface = best_match
@@ -184,22 +180,21 @@ class Router:
             if link_type == 'switch':
                 dst_mac = self.arp_table.get(dst_ip)
                 if dst_mac is None:
-                     print(f"[{self.name}] needs MAC of {dst_ip}, sending ARP Request on {iface}")
-                     self.pending_packets[dst_ip] = (frame, iface)
-                     arp_req = {
-                         'type': 'ARP_REQUEST',
-                         'sender_ip': ip,
-                         'sender_mac': mac,
-                         'target_ip': dst_ip
-                     }
-                     link_data[0].receive_frame(arp_req, self)
+                    print(f"[{self.name}] needs MAC of {dst_ip}, sending ARP Request on {iface}")
+                    self.pending_packets[dst_ip] = (frame, iface)
+                    arp_req = {
+                        'type': 'ARP_REQUEST',
+                        'sender_ip': ip,
+                        'sender_mac': mac,
+                        'target_ip': dst_ip
+                    }
+                    link_data[0].receive_frame(arp_req, self)
                 else:
                     print(f"[{self.name}] MAC for {dst_ip} is {dst_mac}, forwarding data")
                     frame['l2'] = {'src_mac': mac, 'dst_mac': dst_mac}
                     print(f"[{self.name}] prepares L2 header: src_mac={mac}, dst_mac={dst_mac}")
                     print(f"[{self.name}] forwarding DATA to {dst_ip} via MAC {dst_mac}")
                     link_data[0].receive_frame(frame, self)
-
             elif link_type == 'serial':
                 print(f"[{self.name}] forwarding frame over serial on {iface}")
                 link_data[0].transmit(self, frame, iface)
@@ -208,7 +203,6 @@ class Router:
 
     def print_arp_table(self):
         print(f"[{self.name}] ARP Table: {self.arp_table}")
-
 
     def add_rip_neighbor(self, neighbor_router, cost):
         self.rip.add_neighbor(neighbor_router.name, cost)
@@ -219,6 +213,9 @@ class Router:
 
     def print_arp_table(self):
         print(f"[{self.name}] ARP Table: {self.arp_table}")
+
+
+
 
 
 
