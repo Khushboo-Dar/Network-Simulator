@@ -1,5 +1,4 @@
 from TransportLayer.transport import TransportLayer
-from ApplicationLayer.echo_app import echo_server, echo_client
 from ApplicationLayer.ftp_app import ftp_server, ftp_client
 from ApplicationLayer.telnet_app import telnet_server, telnet_client
 import threading
@@ -15,33 +14,13 @@ def simulate_transport_layer():
 
     while True:
         print("\nSelect a service to simulate:")
-        print("1. Echo")
-        print("2. FTP")
-        print("3. Telnet")
-        print("4. Exit")
-        choice = input("Enter your choice (1-4): ")
-
-        # ------------------ Echo Service ------------------
-        if choice == '1':
-            print("\n" + "="*60)
-            print("--- Echo Service Test ---")
-            print("="*60)
-
-            echo_port = transport.assign_port("echo_server", 7000)
-            print(f"[Setup] Assigned port 7000 to Echo Server.")
-            print(f"[Backend] Port table after assignment: {transport.port_table}")
-
-            server_thread = threading.Thread(target=echo_server, args=(transport, echo_port, channel))
-            server_thread.start()
-            time.sleep(0.2)  # Let server start
-
-            echo_client(transport, echo_port, "Hello, World!", channel)
-            server_thread.join()
-
-            print("[Result] Echo test completed.\n")
+        print("1. FTP")
+        print("2. Telnet")
+        print("3. Exit")
+        choice = input("Enter your choice (1-3): ")
 
         # ------------------ FTP Service ------------------
-        elif choice == '2':
+        if choice == '1':
             print("\n" + "="*60)
             print("--- FTP Service Test ---")
             print("="*60)
@@ -64,7 +43,7 @@ def simulate_transport_layer():
             print("[Result] FTP test completed.\n")
 
         # ------------------ Telnet Service ------------------
-        elif choice == '3':
+        elif choice == '2':
             print("\n" + "="*60)
             print("--- Telnet Service Test ---")
             print("="*60)
@@ -88,9 +67,9 @@ def simulate_transport_layer():
             print("[Result] Telnet test completed.\n")
 
         # ------------------ Exit ------------------
-        elif choice == '4':
+        elif choice == '3':
             print("\nExiting Transport Layer simulation. Goodbye!\n")
             break
 
         else:
-            print("Invalid choice. Please select 1, 2, 3, or 4.")
+            print("Invalid choice. Please select 1, 2, or 3.")
