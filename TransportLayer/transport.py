@@ -28,5 +28,5 @@ class TransportLayer:
 
     def receive(self, port, channel):
         result = go_back_n_receive(channel, port)
-        self.last_source_port = result["src_port"]  
+        self.last_source_port = None  
         return result["data"]

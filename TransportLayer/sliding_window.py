@@ -24,12 +24,18 @@ def go_back_n_send(data, channel, src_port, dst_port, window_size=4):
             base += 1
 
 def go_back_n_receive(channel, dst_port):
-    # Simulate receiving data for a port
     received = []
     expected_seq = 0
+    sender_port = None
+
     for pkt in channel:
         src_port, d_port, seq, seg = pkt
         if d_port == dst_port and seq == expected_seq:
             received.append(seg)
+            sender_port = src_port
             expected_seq += 1
-    return ''.join(received)
+
+    return {
+        "data": ''.join(received),
+        "src_port": sender_port
+    }
