@@ -1,5 +1,4 @@
 from TransportLayer.transport import TransportLayer
-from ApplicationLayer.echo_app import echo_server, echo_client
 from ApplicationLayer.ftp_app import ftp_server, ftp_client
 from ApplicationLayer.telnet_app import telnet_server, telnet_client
 import threading
@@ -21,20 +20,29 @@ def simulate_transport_layer():
         print("4. Exit")
         choice = input("Enter your choice (1-4): ")
 
+        
+        # ------------------ FTP Service ------------------
         if choice == '1':
-            # Echo Test
             print("\n" + "="*60)
-            print("--- Echo Service Test ---")
+            print("--- FTP Service Test ---")
             print("="*60)
-            echo_port = transport.assign_port("echo_server", 7000)
-            print(f"[Setup] Assigned port 7000 to Echo Server.")
-            server_thread = threading.Thread(target=echo_server, args=(transport, echo_port, channel))
-            server_thread.start()
-            time.sleep(0.2)
-            echo_client(transport, echo_port, "Hello, World!", channel)
-            server_thread.join()
-            print("[Result] Echo test completed.\n")
 
+            ftp_port = transport.assign_port("ftp_server", 21)
+            files = {"readme.txt": "This is a test file."}
+            print(f"[Setup] Assigned port 21 to FTP Server.")
+            print(f"[Setup] Files available: {list(files.keys())}")
+            print(f"[Backend] Port table after assignment: {transport.port_table}")
+
+            ftp_server_thread = threading.Thread(target=ftp_server, args=(transport, ftp_port, channel, files))
+            ftp_server_thread.start()
+
+            time.sleep(0.2)  # Let server start
+
+            print("[Action] FTP Client will now request 'readme.txt'")
+            ftp_client(transport, ftp_port, "readme.txt", channel)
+
+            ftp_server_thread.join()
+            print("[Result] FTP test completed.\n")
         elif choice == '2':
             # FTP Test
             print("\n" + "="*60)
