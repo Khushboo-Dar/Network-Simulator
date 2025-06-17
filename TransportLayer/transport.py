@@ -2,7 +2,8 @@ import threading
 from TransportLayer.sliding_window import go_back_n_send, go_back_n_receive
 
 class TransportLayer:
-    def __init__(self):
+    def __init__(self,channel):
+        self.channel = channel
         self.port_table = {}  # port_no: process_name
         self.lock = threading.Lock()
         self.next_ephemeral = 1024
@@ -30,7 +31,3 @@ class TransportLayer:
         result = go_back_n_receive(channel, port)
         self.last_source_port = result["src_port"]  
         return result["data"]
-<<<<<<< HEAD
-=======
-
->>>>>>> physical_layer_sibgat
