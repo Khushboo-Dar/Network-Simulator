@@ -4,7 +4,6 @@ import os
 # Ensure the parent directory is in the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-#imports based on files in the data_link_layer folder
 from data_link_layer.frame import Frame
 from data_link_layer.switch import Switch
 from data_link_layer.access_control import CSMA_CD

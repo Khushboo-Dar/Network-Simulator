@@ -6,7 +6,7 @@ from tests.test_data_link import test_case_1, test_case_2, test_case_3
 from NetworkLayer.testcase1 import testcase1
 from NetworkLayer.testcase2 import testcase2
 from Data_link_layer.gbn import main as gbn_main
-
+from test_transport_app import main as test_transport_app_main
 
 def main():
     while True:
@@ -22,10 +22,11 @@ def main():
         print("9. Network Test Case 1 (Basic Router)")
         print("10. Network Test Case 2 (Three Routers with RIP)")
         print("11 GBN Simulation test")
-        print("12. Exit")
+        print("12 Transport and application layer demo: ")
+        print("13. Exit")
         print("============================================")
 
-        choice = input("Enter your choice (1-11): ")
+        choice = input("Enter your choice (1-13): ")
 
         if choice == "1":
             print("\n[ Dedicated Link Simulation Selected ]")
@@ -68,15 +69,16 @@ def main():
         elif choice == '11':
             print("\nRunning GBN Simulation")
             gbn_main()            
+        elif choice=="12":
+            print("\n Transport and app layer demo:")
+            test_transport_app_main()
             
-            
-        elif choice == '12':
+        elif choice == '13':
             print("\nExiting Network Simulator. Goodbye!")
             break
         else:
             print("Invalid choice. Please enter a valid option.")
 
-# Call the main function
 if __name__ == "__main__":
     main()
 #----------------------------------------------------------------------------------
