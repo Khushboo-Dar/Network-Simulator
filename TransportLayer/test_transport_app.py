@@ -5,7 +5,7 @@ import threading
 import time
 
 def simulate_transport_layer():
-    channel = {}  # Simulated channel (can be a dict or list depending on your transport layer)
+    channel = []  # Simulated channel (can be a dict or list depending on your transport layer)
     transport = TransportLayer()
 
     print("\n" + "="*60)
