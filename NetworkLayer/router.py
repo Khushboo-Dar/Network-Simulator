@@ -166,7 +166,7 @@ class Router:
 
         for (net_str, prefix), iface in self.routing_table.items():
             network = ipaddress.IPv4Network(f"{net_str}/{prefix}", strict=False)
-            if dst_ip_obj in network and prefix > best_prefix:
+            if dst_ip_obj in network and int(prefix) > best_prefix:
                 best_match = iface
                 best_prefix = prefix
 
